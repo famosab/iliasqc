@@ -4,6 +4,7 @@
 [![conda-forge version](https://img.shields.io/conda/vn/conda-forge/iliasqc.svg)](https://anaconda.org/conda-forge/iliasqc)
 [![Tests](https://github.com/famosab/iliasqc/actions/workflows/tests.yml/badge.svg)](https://github.com/famosab/iliasqc/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025e8a?logo=dependabot)](https://github.com/famosab/iliasqc/security/dependabot)
 
 Python package to convert structured text files into ILIAS-compatible question pool zip archives. Supports single/multiple choice and gap-fill question types, plus automated quiz combination generation.
 

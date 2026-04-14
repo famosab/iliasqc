@@ -93,7 +93,9 @@ Commands:
 The project uses GitHub Actions for automated testing on every push and pull request.
 
 ### Workflow Files
-- `.github/workflows/tests.yml` - Main CI workflow
+- `.github/workflows/tests.yml` - Main CI workflow (test, lint, build)
+- `.github/workflows/release-please.yml` - Automated releases
+- `.github/dependabot.yml` - Automatic dependency updates
 
 ### CI Pipeline
 
@@ -111,6 +113,23 @@ The CI pipeline runs three jobs:
 3. **build** - Package build verification
    - Builds the package with `python -m build`
    - Verifies build artifacts exist
+
+### Automated Releases (release-please)
+
+The project uses [release-please](https://github.com/googleapis/release-please) for automated versioning and releases:
+
+- Monitors the `main` branch for conventional commits
+- Automatically bumps version based on commit types (feat, fix, etc.)
+- Creates release PRs and publishes to PyPI on merge
+- Supports semantic versioning with changelog generation
+
+### Dependency Updates (Dependabot)
+
+The project uses [Dependabot](https://github.com/dependabot) for automatic dependency updates:
+
+- Updates pip dependencies weekly
+- Creates PRs with version updates
+- Categorizes changes (features, fixes, maintenance)
 
 ### CI Configuration
 
