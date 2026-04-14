@@ -150,8 +150,8 @@ def create_manifest_file(
     if timestamp is None:
         timestamp = qpl_id
 
-    qpl_xml_path = f"Modules/TestQuestionPool/set_1/{timestamp}__{nic}__qpl_{qpl_id}.xml"
-    qti_xml_path = f"Modules/TestQuestionPool/set_1/{timestamp}__{nic}__qti_{qpl_id}.xml"
+    qpl_xml_path = f"{timestamp}__{nic}__qpl_{qpl_id}.xml"
+    qti_xml_path = f"{timestamp}__{nic}__qti_{qpl_id}.xml"
     export_xml_path = "Modules/TestQuestionPool/set_1/export.xml"
     services_export_xml_path = "Services/Export/set_1/export.xml"
 
@@ -241,7 +241,6 @@ def create_ilias_archive(
 
     modules_export_dir = temp_dir / "Modules" / "TestQuestionPool" / "set_1"
     modules_export_dir.mkdir(parents=True, exist_ok=True)
-
     export_xml = create_export_xml(qpl_id, qpl_id, folder_timestamp, nic)
     (modules_export_dir / "export.xml").write_text(export_xml, encoding="utf-8")
 
@@ -253,11 +252,11 @@ def create_ilias_archive(
     manifest_xml = create_manifest_file(qpl_id, title, folder_timestamp, nic, has_media=False)
     (temp_dir / "manifest.xml").write_text(manifest_xml, encoding="utf-8")
 
-    qpl_xml_filename = modules_export_dir / f"{folder_timestamp}__{nic}__qpl_{qpl_id}.xml"
+    qpl_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qpl_{qpl_id}.xml"
     qpl_manifest = create_manifest(qpl_id, title, description, question_ids, folder_timestamp)
     qpl_xml_filename.write_text(qpl_manifest, encoding="utf-8")
 
-    qti_xml_filename = modules_export_dir / f"{folder_timestamp}__{nic}__qti_{qpl_id}.xml"
+    qti_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qti_{qpl_id}.xml"
     qti_xml_filename.write_text(qti_content, encoding="utf-8")
 
     zip_filename = output_dir / f"{folder_name}.zip"
