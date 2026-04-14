@@ -75,6 +75,7 @@ def txt_to_zip(
 
     output_dir = output_path.parent
     unique_id = str(6599700 + int(questions[0].points if questions else 1))
+    question_ids = [q.question_id for q in questions]
 
     archive_path = create_ilias_archive(
         qti_content,
@@ -82,6 +83,7 @@ def txt_to_zip(
         title,
         description or "",
         unique_id=unique_id,
+        question_ids=question_ids,
     )
 
     if output_path != archive_path:

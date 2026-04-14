@@ -11,7 +11,9 @@ from fractions import Fraction
 from pathlib import Path
 
 
-def create_manifest(qpl_id: str, title: str, description: str, qti_id: str) -> str:
+def create_manifest(
+    qpl_id: str, title: str, description: str, question_ids: list[str] | None = None
+) -> str:
     """Create the ILIAS question pool manifest XML.
 
     Parameters
@@ -22,14 +24,23 @@ def create_manifest(qpl_id: str, title: str, description: str, qti_id: str) -> s
         The pool title.
     description:
         The pool description.
-    qti_id:
-        The QTI item ID.
+    question_ids:
+        List of QTI question IDs. If None, uses the pool ID as the question ID.
 
     Returns
     -------
     str
         The manifest XML as a string.
     """
+    if question_ids is None:
+        question_ids = [qpl_id]
+
+    normalized_ids = [qid.replace("il_1600_qst_", "") for qid in question_ids]
+    qref_entries = "".join(f'<Question QRef="il_1600_qst_{qid}"/>' for qid in normalized_ids)
+    trigger_entries = "".join(
+        f'<TriggerQuestion Id="il_1600_qst_{qid}"></TriggerQuestion>' for qid in normalized_ids
+    )
+
     manifest = (
         '<?xml version="1.0" encoding="utf-8"?>'
         '<!DOCTYPE Test SYSTEM "http://www.ilias.uni-koeln.de/download/dtd/ilias_co.dtd">'
@@ -50,11 +61,11 @@ def create_manifest(qpl_id: str, title: str, description: str, qti_id: str) -> s
         "</Settings>"
         "<PageObject>"
         "<PageContent>"
-        f'<Question QRef="il_1600_qst_{qti_id}"/>'
+        f"{qref_entries}"
         "</PageContent>"
         "</PageObject>"
         "<QuestionSkillAssignments>"
-        f'<TriggerQuestion Id="{qti_id}"></TriggerQuestion>'
+        f"{trigger_entries}"
         "</QuestionSkillAssignments>"
         "</ContentObject>"
     )
@@ -94,6 +105,7 @@ def create_ilias_archive(
     title: str,
     description: str,
     unique_id: str | None = None,
+    question_ids: list[str] | None = None,
 ) -> Path:
     """Create ILIAS-compatible archive structure.
 
@@ -146,7 +158,7 @@ def create_ilias_archive(
     (temp_dir / "manifest.xml").write_text(manifest_xml, encoding="utf-8")
 
     qpl_filename = temp_dir / f"{timestamp}__1600__qpl_{qpl_id}.xml"
-    qpl_manifest = create_manifest(qpl_id, title, description, qti_id)
+    qpl_manifest = create_manifest(qpl_id, title, description, question_ids)
     qpl_filename.write_text(qpl_manifest, encoding="utf-8")
 
     qti_filename = temp_dir / f"{timestamp}__1600__qti_{qpl_id}.xml"
