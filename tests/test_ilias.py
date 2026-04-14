@@ -91,38 +91,18 @@ class TestCreateIliasArchive:
         with zipfile.ZipFile(result) as zf:
             names = set(zf.namelist())
             folder_prefix = "1234567"
-            has_manifest = any(n.endswith("/manifest.xml") and folder_prefix in n for n in names)
-            has_export = any("Modules/TestQuestionPool/set_1/export.xml" in n for n in names)
+            has_qpl_xml = any(f"qpl_{folder_prefix}.xml" in n for n in names)
+            has_qti_xml = any(f"qti_{folder_prefix}.xml" in n for n in names)
             has_objects_dir = any(
                 "objects/" in n and n.rstrip("/").endswith("objects") for n in names
             )
             has_objects_dot = any("objects/." in n for n in names)
             has_folder_root = any(n.count("/") == 1 and f"qpl_{folder_prefix}" in n for n in names)
-            assert has_manifest, f"Missing manifest.xml in {names}"
-            assert has_export, f"Missing export.xml in {names}"
+            assert has_qpl_xml, f"Missing qpl XML in {names}"
+            assert has_qti_xml, f"Missing qti XML in {names}"
             assert has_objects_dir, f"Missing objects/ directory in {names}"
             assert has_objects_dot, f"Missing objects/. in {names}"
             assert has_folder_root, f"Missing folder root in {names}"
-
-    def test_export_xml_has_valid_structure(self, tmp_path: Path) -> None:
-        """export.xml should have valid ILIAS export structure."""
-        from iliasqc.ilias import create_export_xml
-
-        export = create_export_xml("12345", "54321")
-        assert '<?xml version="1.0"' in export
-        assert "exp:Export" in export
-        assert 'Entity="qpl"' in export
-        assert 'Id="12345"' in export
-
-    def test_manifest_xml_has_valid_structure(self, tmp_path: Path) -> None:
-        """manifest.xml should have valid ILIAS manifest structure."""
-        from iliasqc.ilias import create_manifest_file
-
-        manifest = create_manifest_file("12345", "Test Pool")
-        assert '<?xml version="1.0"' in manifest
-        assert "Manifest" in manifest
-        assert 'MainEntity="qpl"' in manifest
-        assert "Test Pool" in manifest
 
     def test_zip_xml_files_in_root_folder(self, tmp_path: Path) -> None:
         """QTI and QPL XML files should be in root folder, not in subdirectories."""

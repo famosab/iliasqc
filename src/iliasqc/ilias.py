@@ -241,19 +241,6 @@ def create_ilias_archive(
 
     (temp_dir / "objects").mkdir(exist_ok=True)
 
-    modules_export_dir = temp_dir / "Modules" / "TestQuestionPool" / "set_1"
-    modules_export_dir.mkdir(parents=True, exist_ok=True)
-    export_xml = create_export_xml(qpl_id, qpl_id, folder_timestamp, nic)
-    (modules_export_dir / "export.xml").write_text(export_xml, encoding="utf-8")
-
-    services_export_dir = temp_dir / "Services" / "Export" / "set_1"
-    services_export_dir.mkdir(parents=True, exist_ok=True)
-    services_export_xml = create_export_xml(qpl_id, qpl_id, folder_timestamp, nic)
-    (services_export_dir / "export.xml").write_text(services_export_xml, encoding="utf-8")
-
-    manifest_xml = create_manifest_file(qpl_id, title, folder_timestamp, nic, has_media=False)
-    (temp_dir / "manifest.xml").write_text(manifest_xml, encoding="utf-8")
-
     qpl_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qpl_{qpl_id}.xml"
     qpl_manifest = create_manifest(qpl_id, title, description, question_ids, folder_timestamp)
     qpl_xml_filename.write_text(qpl_manifest, encoding="utf-8")

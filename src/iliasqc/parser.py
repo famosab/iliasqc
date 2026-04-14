@@ -29,9 +29,9 @@ class Question:
     question_id: str = ""
 
 
-QUESTION_TYPE_MC_SINGLE = "assSingleChoice"
-QUESTION_TYPE_MC_MULTI = "assMultipleChoice"
-QUESTION_TYPE_GAP = "assClozeQuestion"
+QUESTION_TYPE_MC_SINGLE = "SINGLE CHOICE QUESTION"
+QUESTION_TYPE_MC_MULTI = "MULTIPLE CHOICE QUESTION"
+QUESTION_TYPE_GAP = "CLOZE QUESTION"
 
 
 def extract_point_values(file_path: str | Path) -> list[float]:
@@ -197,7 +197,7 @@ def parse_question_file(file_path: str | Path) -> list[Question]:
                 if current_question is not None:
                     questions.append(current_question)
 
-                question_id = str(line_no)
+                question_id = f"il_0_qst_{line_no}"
 
                 question_type = QUESTION_TYPE_MC_SINGLE
                 if stripped[3:6] == "[s]":

@@ -148,9 +148,9 @@ class TestTxtToQti:
         output = txt_to_qti(input_file)
 
         content_text = output.read_text()
-        assert "<test_question_pool" in content_text
+        assert "<questestinterop>" in content_text
         assert "Test Question" in content_text
-        assert "</test_question_pool>" in content_text
+        assert "</questestinterop>" in content_text
 
     def test_filter_by_points(self, tmp_path: Path) -> None:
         """Should filter questions by point value."""
