@@ -134,3 +134,47 @@ class TestCliMain:
         assert result == 1
         output = capsys.readouterr().err
         assert "--target" in output
+
+    def test_validate_valid_file(self, tmp_path, capsys):
+        """validate should pass for valid question file."""
+
+        content = """# TITLE: Test Pool
+
+[t][m] What is 2+2? @1
+_ 4
+- 3
+
+[t][s] What is 5+5? @2
+_ 10
+- 9
+"""
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = main(["validate", str(input_file)])
+
+        assert result == 0
+        output = capsys.readouterr().out
+        assert "Validation passed" in output
+
+    def test_validate_invalid_file(self, tmp_path, capsys):
+        """validate should fail for invalid question file."""
+
+        content = "[t][m] Question with no answers @1"
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = main(["validate", str(input_file)])
+
+        assert result == 1
+        output = capsys.readouterr().err
+        assert "Validation failed" in output
+
+    def test_validate_missing_file(self, tmp_path, capsys):
+        """validate should fail for missing file."""
+
+        result = main(["validate", "/nonexistent/file.txt"])
+
+        assert result == 1
+        output = capsys.readouterr().err
+        assert "not found" in output.lower()

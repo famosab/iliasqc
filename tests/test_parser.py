@@ -11,6 +11,7 @@ from iliasqc.parser import (
     extract_metadata,
     extract_point_values,
     parse_question_file,
+    validate_question_file,
 )
 
 
@@ -180,3 +181,96 @@ class TestExtractPointValues:
         point_values = extract_point_values(input_file)
 
         assert point_values == [1.0]
+
+
+class TestValidateQuestionFile:
+    """Tests for validate_question_file function."""
+
+    def test_valid_file_returns_true(self, tmp_path: Path) -> None:
+        """Valid question file should pass validation."""
+        content = """# TITLE: Test Pool
+
+[t][m] What is 2+2? @1
+_ 4
+- 3
+
+[t][s] What is 5+5? @2
+_ 10
+- 9
+"""
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is True
+        assert len(result.errors) == 0
+
+    def test_missing_file_returns_false(self) -> None:
+        """Missing file should return validation error."""
+        result = validate_question_file("/nonexistent/file.txt")
+
+        assert result.valid is False
+        assert len(result.errors) == 1
+        assert result.errors[0].line_number == 0
+        assert "not found" in result.errors[0].message
+
+    def test_missing_answers_returns_error(self, tmp_path: Path) -> None:
+        """Multiple choice question with no answers should fail."""
+        content = "[t][m] Question without answers @1"
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is False
+        assert len(result.errors) == 1
+        assert "no answers" in result.errors[0].message.lower()
+
+    def test_invalid_question_type_returns_error(self, tmp_path: Path) -> None:
+        """Invalid question type marker should fail."""
+        content = "[t][x] Invalid question @1"
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is False
+        assert any("question type" in e.message.lower() for e in result.errors)
+
+    def test_invalid_point_value_returns_error(self, tmp_path: Path) -> None:
+        """Invalid point value should fail validation."""
+        content = "[t][s] Question @invalid"
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is False
+        assert any("point" in e.message.lower() for e in result.errors)
+
+    def test_gap_in_multiple_choice_returns_error(self, tmp_path: Path) -> None:
+        """Gap markers in multiple choice questions should fail."""
+        content = """[t][m] Question
+- Wrong
+[gap]gap[/gap] text
+"""
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is False
+        assert any("gap" in e.message.lower() for e in result.errors)
+
+    def test_gap_question_passes_validation(self, tmp_path: Path) -> None:
+        """Gap-fill questions should pass validation."""
+        content = """[t][g] Fill the blank @1
+The answer is [gap]test[/gap].
+"""
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = validate_question_file(input_file)
+
+        assert result.valid is True
