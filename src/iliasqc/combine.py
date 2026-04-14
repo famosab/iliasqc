@@ -96,6 +96,8 @@ def generate_pools_by_points(
             title=pool_title,
             description=description,
             filter_points=points,
+            unique_id=unique_id,
+            folder_timestamp=str(timestamp_int),
         )
 
         pools.append(
