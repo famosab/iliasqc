@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iliasqc"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python package to convert txt files into zip folder that can be uploaded to Ilias to create question pools."
 readme = "README.md"
 license = "MIT"
