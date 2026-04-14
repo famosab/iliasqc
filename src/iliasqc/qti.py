@@ -89,32 +89,32 @@ RESPONSE_PROCESSING_OPEN = """    <resprocessing>
 RESPONSE_PROCESSING_CLOSE = "    </resprocessing>\n"
 
 RESP_CONDITION_GAP = """      <respcondition continue="Yes">
-        <conditionvar>
-          <varequal respident="gap_{gap_no}">{answer}</varequal>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="{gap_no}_Response_0"/>
-      </respcondition>
+         <conditionvar>
+           <varequal respident="gap_{gap_no}">{answer}</varequal>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="{gap_no}_Response_0"/>
+       </respcondition>
 """
 
 RESP_CONDITION_MC_CHECKED = """      <respcondition continue="Yes">
-        <conditionvar>
-          <varequal respident="{resp_ident}">{answer_id}</varequal>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="response_{answer_id}"/>
-      </respcondition>
+         <conditionvar>
+           <varequal respident="MCSR">{answer_id}</varequal>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="response_{answer_id}"/>
+       </respcondition>
 """
 
 RESP_CONDITION_MC_UNCHECKED = """      <respcondition continue="Yes">
-        <conditionvar>
-          <not>
-          <varequal respident="{resp_ident}">{answer_id}</varequal>
-          </not>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="Response_{answer_id}"/>
-      </respcondition>
+         <conditionvar>
+           <not>
+           <varequal respident="MCSR">{answer_id}</varequal>
+           </not>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="Response_{answer_id}"/>
+       </respcondition>
 """
 
 ITEM_FEEDBACK_GAP = """    <itemfeedback ident="{gap_no}_Response_0" view="All">
@@ -240,9 +240,7 @@ def create_question(question: Question) -> tuple[str, str, str]:
             presentation_elems += MC_LABEL_TEMPLATE.format(ident=answer_id, text=answer_text)
 
             if answer.is_correct:
-                resp_ident = "MCMR" if is_multi else "MCSR"
                 resprocessing_elems += RESP_CONDITION_MC_CHECKED.format(
-                    resp_ident=resp_ident,
                     answer_id=answer_id,
                     points=points_per_answer,
                 )
@@ -250,22 +248,18 @@ def create_question(question: Question) -> tuple[str, str, str]:
 
                 if is_multi:
                     resprocessing_elems += RESP_CONDITION_MC_UNCHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=0,
                     )
             else:
-                resp_ident = "MCMR" if is_multi else "MCSR"
                 if is_multi:
                     resprocessing_elems += RESP_CONDITION_MC_UNCHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=points_per_answer,
                     )
                     points_assigned += points_per_answer
                 else:
                     resprocessing_elems += RESP_CONDITION_MC_CHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=0,
                     )

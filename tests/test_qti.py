@@ -166,4 +166,4 @@ class TestConvertToQti:
 
         result = convert_to_qti(questions)
 
-        assert '<setvar action="Add">2.0</setvar>' in result
+        assert '<setvar action="Add">2.000000</setvar>' in result
