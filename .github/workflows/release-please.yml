@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         id: release
+        token: ${{ secrets.RELEASE_PLEASE_PAT }}
         with:
           release-type: python
           target-branch: main
