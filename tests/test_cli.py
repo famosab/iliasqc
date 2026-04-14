@@ -1,5 +1,6 @@
 """Tests for iliasqc.cli."""
 
+from iliasqc import __version__
 from iliasqc.cli import main
 
 
@@ -134,3 +135,27 @@ class TestCliMain:
         assert result == 1
         output = capsys.readouterr().err
         assert "--target" in output
+
+    def test_version_flag_outputs_version(self, capsys):
+        """--version should print CLI version and exit."""
+        exit_code = None
+        try:
+            main(["--version"])
+        except SystemExit as exc:
+            exit_code = exc.code
+
+        assert exit_code == 0
+        output = capsys.readouterr().out
+        assert __version__ in output
+
+    def test_help_includes_version(self, capsys):
+        """--help output should include the current version."""
+        exit_code = None
+        try:
+            main(["--help"])
+        except SystemExit as exc:
+            exit_code = exc.code
+
+        assert exit_code == 0
+        output = capsys.readouterr().out
+        assert __version__ in output
