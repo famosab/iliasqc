@@ -1,0 +1,166 @@
+"""Tests for iliasqc.ilias."""
+
+import csv
+import zipfile
+from pathlib import Path
+
+import pytest
+
+from iliasqc.ilias import (
+    create_ilias_archive,
+    create_manifest,
+    export_target_point_combinations_csv,
+    update_pool_overview_csv,
+)
+
+
+class TestCreateManifest:
+    """Tests for create_manifest function."""
+
+    def test_creates_valid_manifest(self) -> None:
+        """Manifest should contain all required elements."""
+        manifest = create_manifest("12345", "Test Pool", "A test", "12345")
+
+        assert '<?xml version="1.0" encoding="utf-8"?>' in manifest
+        assert "Questionpool_Test" in manifest
+        assert "Test Pool" in manifest
+        assert "A test" in manifest
+        assert "il_1600_qpl_12345" in manifest
+
+
+class TestCreateIliasArchive:
+    """Tests for create_ilias_archive function."""
+
+    def test_creates_zip_file(self, tmp_path: Path) -> None:
+        """Should create a valid zip archive."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="1234567",
+        )
+
+        assert result.exists()
+        assert result.suffix == ".zip"
+
+    def test_zip_contains_required_files(self, tmp_path: Path) -> None:
+        """Zip should contain manifest and QTI files."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="1234567",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            names = zf.namelist()
+            assert any("qpl_" in name and name.endswith(".xml") for name in names)
+            assert any("qti_" in name and name.endswith(".xml") for name in names)
+
+
+class TestUpdatePoolOverviewCsv:
+    """Tests for update_pool_overview_csv function."""
+
+    def test_creates_csv_file(self, tmp_path: Path) -> None:
+        """Should create overview CSV with correct columns."""
+        rows = [
+            {
+                "pool_zip_name": "pool1.zip",
+                "ilias_pool_name": "Pool 1",
+                "question_count": "5",
+                "points_per_question": "1",
+            }
+        ]
+
+        path, merged = update_pool_overview_csv(tmp_path, rows)
+
+        assert path is not None
+        assert path.exists()
+
+        content = path.read_text()
+        assert "pool_zip_name" in content
+        assert "ilias_pool_name" in content
+        assert "question_count" in content
+        assert "points_per_question" in content
+
+    def test_merges_existing_rows(self, tmp_path: Path) -> None:
+        """Should merge with existing CSV entries."""
+        existing = [
+            {
+                "pool_zip_name": "existing.zip",
+                "ilias_pool_name": "Existing",
+                "question_count": "3",
+                "points_per_question": "2",
+            }
+        ]
+        update_pool_overview_csv(tmp_path, existing)
+
+        new_rows = [
+            {
+                "pool_zip_name": "new.zip",
+                "ilias_pool_name": "New",
+                "question_count": "7",
+                "points_per_question": "1",
+            }
+        ]
+        path, merged = update_pool_overview_csv(tmp_path, new_rows)
+
+        assert len(merged) == 2
+
+    def test_returns_none_for_empty_rows(self, tmp_path: Path) -> None:
+        """Should return (None, None) for empty input."""
+        path, merged = update_pool_overview_csv(tmp_path, [])
+        assert path is None
+        assert merged is None
+
+
+class TestExportTargetPointCombinationsCsv:
+    """Tests for export_target_point_combinations_csv function."""
+
+    def test_creates_combinations_csv(self, tmp_path: Path) -> None:
+        """Should create combinations CSV."""
+        overview_rows = [
+            {
+                "pool_zip_name": "pool1.zip",
+                "ilias_pool_name": "Pool 1",
+                "question_count": "5",
+                "points_per_question": "1",
+            },
+            {
+                "pool_zip_name": "pool2.zip",
+                "ilias_pool_name": "Pool 2",
+                "question_count": "10",
+                "points_per_question": "2",
+            },
+        ]
+
+        path, count = export_target_point_combinations_csv(
+            tmp_path, overview_rows, target_points=4
+        )
+
+        assert path is not None
+        assert path.exists()
+        assert count >= 0
+
+    def test_returns_none_for_empty_rows(self, tmp_path: Path) -> None:
+        """Should return (None, 0) for empty input."""
+        path, count = export_target_point_combinations_csv(tmp_path, [])
+        assert path is None
+        assert count == 0
+
+    def test_raises_for_invalid_target_points(self, tmp_path: Path) -> None:
+        """Should raise ValueError for invalid target points."""
+        with pytest.raises(ValueError):
+            export_target_point_combinations_csv(
+                tmp_path, [], target_points=-1
+            )
