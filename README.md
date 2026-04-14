@@ -8,6 +8,8 @@
 
 Python package to convert structured text files into ILIAS-compatible question pool zip archives. Supports single/multiple choice and gap-fill question types, plus automated quiz combination generation.
 
+This package is based on [Kaffeedrache/Tiqi](https://github.com/Kaffeedrache/Tiqi).
+
 ## Features
 
 - **Multiple question types**: Single choice, multiple choice, and gap-fill questions
