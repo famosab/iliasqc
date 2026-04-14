@@ -130,3 +130,60 @@ class TestConvertToQti:
         assert 'item ident="q_2"' in result
         assert 'title="Q1"' in result
         assert 'title="Q2"' in result
+
+    def test_decvar_has_correct_attributes(self) -> None:
+        """decvar should have varname, vartype, minvalue, and maxvalue attributes."""
+        questions = [
+            Question(
+                question_type=QUESTION_TYPE_MC_SINGLE,
+                title="Q1",
+                text="<br/>_ A",
+                points=2.0,
+                answers=[Answer(text="A", is_correct=True)],
+                line_number=1,
+                question_id="q_1",
+            ),
+        ]
+
+        result = convert_to_qti(questions)
+
+        assert 'decvar varname="SCORE"' in result
+        assert 'vartype="Integer"' in result
+        assert 'minvalue="0"' in result
+        assert 'maxvalue="2"' in result
+
+    def test_decvar_uses_question_points(self) -> None:
+        """decvar maxvalue should match question points."""
+        questions = [
+            Question(
+                question_type=QUESTION_TYPE_MC_SINGLE,
+                title="Q1",
+                text="<br/>_ A",
+                points=3.0,
+                answers=[Answer(text="A", is_correct=True)],
+                line_number=1,
+                question_id="q_1",
+            ),
+        ]
+
+        result = convert_to_qti(questions)
+
+        assert 'maxvalue="3"' in result
+
+    def test_correct_answer_has_question_points(self) -> None:
+        """Correct answer should have question points in setvar."""
+        questions = [
+            Question(
+                question_type=QUESTION_TYPE_MC_SINGLE,
+                title="Q1",
+                text="<br/>_ A<br/>- B",
+                points=2.0,
+                answers=[Answer(text="A", is_correct=True), Answer(text="B", is_correct=False)],
+                line_number=1,
+                question_id="q_1",
+            ),
+        ]
+
+        result = convert_to_qti(questions)
+
+        assert '<setvar action="Add">2.0</setvar>' in result

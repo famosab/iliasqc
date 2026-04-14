@@ -26,6 +26,14 @@ class TestCreateManifest:
         assert "A test" in manifest
         assert "il_1600_qpl_12345" in manifest
 
+    def test_manifest_has_qpl_and_qti_entries(self) -> None:
+        """Manifest should reference root-level XML files."""
+        from iliasqc.ilias import create_manifest_file
+
+        manifest = create_manifest_file("12345", "Test", "1234567890", "0")
+        assert "1234567890__0__qpl_12345.xml" in manifest
+        assert "1234567890__0__qti_12345.xml" in manifest
+
 
 class TestCreateIliasArchive:
     """Tests for create_ilias_archive function."""
@@ -115,6 +123,41 @@ class TestCreateIliasArchive:
         assert "Manifest" in manifest
         assert 'MainEntity="qpl"' in manifest
         assert "Test Pool" in manifest
+
+    def test_zip_xml_files_in_root_folder(self, tmp_path: Path) -> None:
+        """QTI and QPL XML files should be in root folder, not in subdirectories."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item ident="test" title="Test"/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="1234567",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            names = zf.namelist()
+            root_xmls = [n for n in names if n.endswith(".xml") and n.count("/") == 1]
+            assert any("qpl_" in n for n in root_xmls), f"QPL XML should be in root: {root_xmls}"
+            assert any("qti_" in n for n in root_xmls), f"QTI XML should be in root: {root_xmls}"
+
+    def test_manifest_has_information_element(self, tmp_path: Path) -> None:
+        """manifest.xml should have Information element with MainEntity."""
+        from iliasqc.ilias import create_manifest_file
+
+        manifest = create_manifest_file("12345", "Test Pool", "1234567890", "0")
+        assert "<Information>" in manifest
+        assert "<MainEntity>qpl</MainEntity>" in manifest
+
+    def test_export_xml_has_correct_namespace(self) -> None:
+        """export.xml should use htm namespace."""
+        from iliasqc.ilias import create_export_xml
+
+        export = create_export_xml("12345", "54321")
+        assert "http://www.ilias.de/Modules/TestQuestionPool/htlm/4_1" in export
 
 
 class TestUpdatePoolOverviewCsv:
