@@ -12,6 +12,7 @@ from iliasqc.combine import (
     generate_quiz_combinations,
 )
 from iliasqc.convert import txt_to_qti, txt_to_zip
+from iliasqc.parser import validate_question_file
 from iliasqc.template import generate_template
 
 
@@ -101,6 +102,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     template_parser.add_argument(
         "--no-examples", action="store_true", help="Generate a template without example questions."
+    )
+
+    validate_parser = subparsers.add_parser("validate", help="Validate a question file")
+    validate_parser.add_argument("input", help="Path to the input .txt file.")
+    validate_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Treat warnings as errors (exit with error code even for warnings).",
     )
 
     args = parser.parse_args(argv)
@@ -202,6 +211,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Created template: {output}")
             return 0
         except FileExistsError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+
+    elif args.command == "validate":
+        try:
+            result = validate_question_file(args.input)
+            if result.valid:
+                print(f"Validation passed: {args.input}")
+                return 0
+            else:
+                print(f"Validation failed for {args.input}:", file=sys.stderr)
+                for error in result.errors:
+                    print(f"  Line {error.line_number}: {error.message}", file=sys.stderr)
+                return 1
+        except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             return 1
 

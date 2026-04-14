@@ -29,6 +29,22 @@ class Question:
     question_id: str = ""
 
 
+@dataclass
+class ValidationError:
+    """Represents a validation error."""
+
+    line_number: int
+    message: str
+
+
+@dataclass
+class ValidationResult:
+    """Result of validating a question file."""
+
+    valid: bool
+    errors: list[ValidationError]
+
+
 QUESTION_TYPE_MC_SINGLE = "SINGLE CHOICE QUESTION"
 QUESTION_TYPE_MC_MULTI = "MULTIPLE CHOICE QUESTION"
 QUESTION_TYPE_GAP = "CLOZE QUESTION"
@@ -246,3 +262,134 @@ def parse_question_file(file_path: str | Path) -> list[Question]:
             q.answers = _parse_mc_answers(q.text)
 
     return questions
+
+
+def validate_question_file(file_path: str | Path) -> ValidationResult:
+    """Validate a question text file.
+
+    Parameters
+    ----------
+    file_path:
+        Path to the question text file.
+
+    Returns
+    -------
+    ValidationResult
+        Object containing validation status and list of errors.
+    """
+    errors: list[ValidationError] = []
+
+    file_path = Path(file_path)
+    if not file_path.exists():
+        return ValidationResult(
+            valid=False, errors=[ValidationError(0, f"File not found: {file_path}")]
+        )
+
+    question_start_line: int | None = None
+    question_type: str | None = None
+    has_answers: bool = False
+    answer_lines: int = 0
+
+    with open(file_path, encoding="utf-8") as f:
+        for line_no, line in enumerate(f, start=1):
+            stripped = line.strip()
+
+            if stripped == "":
+                if question_start_line is not None and question_type in (
+                    QUESTION_TYPE_MC_SINGLE,
+                    QUESTION_TYPE_MC_MULTI,
+                ):
+                    if not has_answers:
+                        errors.append(
+                            ValidationError(
+                                question_start_line,
+                                f"Multiple choice question at line {question_start_line} has no answers",
+                            )
+                        )
+                    has_answers = False
+                    answer_lines = 0
+                    question_start_line = None
+                    question_type = None
+                continue
+
+            if stripped.startswith("#"):
+                if stripped.startswith("# TITLE:") or stripped.startswith("# DESCRIPTION:"):
+                    pass
+                continue
+
+            if stripped.startswith("[t]"):
+                if question_start_line is not None and question_type in (
+                    QUESTION_TYPE_MC_SINGLE,
+                    QUESTION_TYPE_MC_MULTI,
+                ):
+                    if not has_answers:
+                        errors.append(
+                            ValidationError(
+                                question_start_line,
+                                f"Multiple choice question at line {question_start_line} has no answers",
+                            )
+                        )
+
+                if len(stripped) < 8 or stripped[3:6] not in ("[s]", "[m]", "[g]"):
+                    errors.append(
+                        ValidationError(
+                            line_no,
+                            f"Invalid question type marker at line {line_no}. Use [s], [m], or [g] after [t]",
+                        )
+                    )
+                    continue
+
+                question_start_line = line_no
+
+                if stripped[3:6] == "[s]":
+                    question_type = QUESTION_TYPE_MC_SINGLE
+                elif stripped[3:6] == "[m]":
+                    question_type = QUESTION_TYPE_MC_MULTI
+                elif stripped[3:6] == "[g]":
+                    question_type = QUESTION_TYPE_GAP
+                else:
+                    question_type = None
+
+                title_with_points = stripped[6:].strip()
+                if "@" in title_with_points:
+                    parts = title_with_points.rsplit("@", 1)
+                    try:
+                        float(parts[1].strip())
+                    except ValueError:
+                        errors.append(
+                            ValidationError(
+                                line_no,
+                                f"Invalid point value at line {line_no}: '{parts[1].strip()}'",
+                            )
+                        )
+
+                has_answers = False
+                answer_lines = 0
+                continue
+
+            if question_start_line is not None:
+                if stripped.startswith("_ ") or stripped.startswith("- "):
+                    has_answers = True
+                    answer_lines += 1
+                elif question_type in (QUESTION_TYPE_MC_SINGLE, QUESTION_TYPE_MC_MULTI):
+                    if "[gap]" in stripped:
+                        errors.append(
+                            ValidationError(
+                                line_no,
+                                f"Gap markers [gap] not allowed in multiple choice questions (line {line_no})",
+                            )
+                        )
+
+    if question_start_line is not None and question_type in (
+        QUESTION_TYPE_MC_SINGLE,
+        QUESTION_TYPE_MC_MULTI,
+    ):
+        if not has_answers:
+            errors.append(
+                ValidationError(
+                    question_start_line,
+                    f"Multiple choice question at line {question_start_line} has no answers",
+                )
+            )
+
+    return ValidationResult(valid=len(errors) == 0, errors=errors)
