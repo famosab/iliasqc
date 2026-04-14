@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import hashlib
 import os
 import shutil
 import zipfile
@@ -131,16 +130,11 @@ def create_ilias_archive(
     if unique_id is None:
         unique_id = "0000000"
 
-    fingerprint = f"{unique_id}\n{title}\n{description}\n{qti_content}".encode()
-    digest = hashlib.sha1(fingerprint).hexdigest()
-    timestamp_int = int(digest[:12], 16) % 9000000000 + 1000000000
-    timestamp = str(timestamp_int)
-
     qpl_id = unique_id
     qti_id = unique_id
 
     output_dir = Path(output_dir)
-    folder_name = f"{timestamp}__1600__qpl_{qpl_id}"
+    folder_name = f"{qpl_id}__1600__qpl_{qpl_id}"
     temp_dir = output_dir / folder_name
 
     if temp_dir.exists():
@@ -157,11 +151,11 @@ def create_ilias_archive(
     manifest_xml = create_manifest_file(qpl_id, title)
     (temp_dir / "manifest.xml").write_text(manifest_xml, encoding="utf-8")
 
-    qpl_filename = temp_dir / f"{timestamp}__1600__qpl_{qpl_id}.xml"
+    qpl_filename = temp_dir / f"{qpl_id}__1600__qpl_{qpl_id}.xml"
     qpl_manifest = create_manifest(qpl_id, title, description, question_ids)
     qpl_filename.write_text(qpl_manifest, encoding="utf-8")
 
-    qti_filename = temp_dir / f"{timestamp}__1600__qti_{qpl_id}.xml"
+    qti_filename = temp_dir / f"{qpl_id}__1600__qti_{qpl_id}.xml"
     qti_filename.write_text(qti_content, encoding="utf-8")
 
     zip_filename = output_dir / f"{folder_name}.zip"
