@@ -75,7 +75,7 @@ class TestCreateIliasArchive:
             assert any("qti_" in name and name.endswith(".xml") for name in names)
 
     def test_zip_has_ilias_export_structure(self, tmp_path: Path) -> None:
-        """Zip should have proper ILIAS export structure for import."""
+        """Zip should have proper ILIAS export structure for import (tiqi style - no objects dir)."""
         qti_content = """<?xml version="1.0"?>
         <questestinterop><item ident="test" title="Test"/></questestinterop>
         """
@@ -93,15 +93,9 @@ class TestCreateIliasArchive:
             folder_prefix = "1234567"
             has_qpl_xml = any(f"qpl_{folder_prefix}.xml" in n for n in names)
             has_qti_xml = any(f"qti_{folder_prefix}.xml" in n for n in names)
-            has_objects_dir = any(
-                "objects/" in n and n.rstrip("/").endswith("objects") for n in names
-            )
-            has_objects_dot = any("objects/." in n for n in names)
             has_folder_root = any(n.count("/") == 1 and f"qpl_{folder_prefix}" in n for n in names)
             assert has_qpl_xml, f"Missing qpl XML in {names}"
             assert has_qti_xml, f"Missing qti XML in {names}"
-            assert has_objects_dir, f"Missing objects/ directory in {names}"
-            assert has_objects_dot, f"Missing objects/. in {names}"
             assert has_folder_root, f"Missing folder root in {names}"
 
     def test_zip_xml_files_in_root_folder(self, tmp_path: Path) -> None:
@@ -140,18 +134,18 @@ class TestCreateIliasArchive:
         assert "http://www.ilias.de/Modules/TestQuestionPool/htlm/4_1" in export
 
     def test_qpl_has_pcid_attribute(self) -> None:
-        """QPL should have PCID attribute in PageContent."""
+        """QPL should have PCID attribute in PageContent matching qpl_id (tiqi style)."""
         from iliasqc.ilias import create_manifest
 
         manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
-        assert 'PageContent PCID="4"' in manifest
+        assert 'PageContent PCID="12345"' in manifest
 
-    def test_trigger_question_uses_id_without_prefix(self) -> None:
-        """TriggerQuestion Id should not have il_1600_qst_ prefix."""
+    def test_trigger_question_uses_qpl_id(self) -> None:
+        """TriggerQuestion Id should use qpl_id (tiqi style)."""
         from iliasqc.ilias import create_manifest
 
         manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
-        assert '<TriggerQuestion Id="4"></TriggerQuestion>' in manifest
+        assert '<TriggerQuestion Id="12345"></TriggerQuestion>' in manifest
 
     def test_keyword_uses_language_en(self) -> None:
         """Keyword should use Language='en'."""

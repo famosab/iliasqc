@@ -44,13 +44,17 @@ def create_manifest(
     if timestamp is None:
         timestamp = qpl_id
 
-    normalized_ids = [qid.replace("il_1600_qst_", "") for qid in question_ids]
-    qref_entries = "".join(f'<Question QRef="{qid}"/>' for qid in normalized_ids)
-    trigger_entries = "".join(
-        f'<TriggerQuestion Id="{qid}"></TriggerQuestion>' for qid in normalized_ids
-    )
+    normalized_ids = []
+    for qid in question_ids:
+        if "_qst_" in qid:
+            normalized_ids.append(qid.split("_qst_")[-1])
+        else:
+            normalized_ids.append(qid)
 
-    pcid = normalized_ids[0] if normalized_ids else qpl_id
+    # tiqi uses qpl_id for PCID and TriggerQuestion entries
+    qref_entries = "".join(f'<Question QRef="il_1600_qst_{qid}"/>' for qid in normalized_ids)
+    pcid = qpl_id  # Use pool ID, not question ID
+    trigger_entries = f'<TriggerQuestion Id="{qpl_id}"></TriggerQuestion>'
 
     manifest = (
         '<?xml version="1.0" encoding="utf-8"?>'
@@ -190,7 +194,7 @@ def create_ilias_archive(
     unique_id: str | None = None,
     question_ids: list[str] | None = None,
     folder_timestamp: str | None = None,
-    nic: str = "0",
+    nic: str = "1600",
 ) -> Path:
     """Create ILIAS-compatible archive structure following Native Export schema.
 
@@ -213,7 +217,7 @@ def create_ilias_archive(
         Optional timestamp for the folder/zip name. If not provided,
         a deterministic timestamp is generated from the content.
     nic:
-        The Network Installation Code, defaults to "0".
+        The Network Installation Code, defaults to "1600".
 
     Returns
     -------
@@ -242,7 +246,7 @@ def create_ilias_archive(
     (temp_dir / "objects").mkdir(exist_ok=True)
 
     qpl_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qpl_{qpl_id}.xml"
-    qpl_manifest = create_manifest(qpl_id, title, description, question_ids, folder_timestamp)
+    qpl_manifest = create_manifest(qpl_id, title, description, None, folder_timestamp)
     qpl_xml_filename.write_text(qpl_manifest, encoding="utf-8")
 
     qti_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qti_{qpl_id}.xml"
@@ -250,17 +254,11 @@ def create_ilias_archive(
 
     zip_filename = output_dir / f"{folder_name}.zip"
     with zipfile.ZipFile(zip_filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr(folder_name + "/", "")
-        for root, dirs, files in os.walk(temp_dir):
-            for d in dirs:
-                dir_path = Path(root) / d
-                rel_path = dir_path.relative_to(temp_dir)
-                zf.writestr(f"{folder_name}/{rel_path}/", "")
+        for root, _dirs, files in os.walk(temp_dir):
             for file in files:
                 file_path = Path(root) / file
                 arcname = file_path.relative_to(temp_dir.parent)
                 zf.write(file_path, arcname)
-        zf.writestr(f"{folder_name}/objects/./", "")
 
     shutil.rmtree(temp_dir)
 

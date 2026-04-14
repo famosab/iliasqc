@@ -79,7 +79,7 @@ def txt_to_zip(
 
     output_dir = output_path.parent
     if unique_id is None:
-        unique_id = str(6599700 + int(questions[0].points if questions else 1))
+        unique_id = "6599701"
     question_ids = [q.question_id for q in questions]
 
     archive_path = create_ilias_archive(

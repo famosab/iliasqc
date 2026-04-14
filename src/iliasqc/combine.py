@@ -87,7 +87,7 @@ def generate_pools_by_points(
         fingerprint = f"{unique_id}\n{pool_title}\n{description}\n{input_path}".encode()
         digest = hashlib.sha1(fingerprint).hexdigest()
         timestamp_int = int(digest[:12], 16) % 9000000000 + 1000000000
-        pool_filename = f"{timestamp_int}__0__qpl_{unique_id}.zip"
+        pool_filename = f"{timestamp_int}__1600__qpl_{unique_id}.zip"
         pool_path = output_dir / pool_filename
 
         actual_path = txt_to_zip(
