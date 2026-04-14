@@ -31,6 +31,10 @@ ITEM_METADATA = """    <qticomment/>
           <fieldentry>9.18.0</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
+          <fieldlabel>QuestionEngineVersion</fieldlabel>
+          <fieldentry>1</fieldentry>
+        </qtimetadatafield>
+        <qtimetadatafield>
           <fieldlabel>QUESTIONTYPE</fieldlabel>
           <fieldentry>{question_type}</fieldentry>
         </qtimetadatafield>

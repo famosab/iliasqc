@@ -29,9 +29,9 @@ class Question:
     question_id: str = ""
 
 
-QUESTION_TYPE_MC_SINGLE = "SINGLE CHOICE QUESTION"
-QUESTION_TYPE_MC_MULTI = "MULTIPLE CHOICE QUESTION"
-QUESTION_TYPE_GAP = "CLOZE QUESTION"
+QUESTION_TYPE_MC_SINGLE = "assSingleChoice"
+QUESTION_TYPE_MC_MULTI = "assMultipleChoice"
+QUESTION_TYPE_GAP = "assClozeQuestion"
 
 
 def extract_point_values(file_path: str | Path) -> list[float]:
