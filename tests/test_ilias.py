@@ -35,6 +35,100 @@ class TestCreateManifest:
         assert "1234567890__0__qti_12345.xml" in manifest
 
 
+class TestTiqiParity:
+    """Tests to ensure iliasqc output matches tiqi.py output format."""
+
+    def test_manifest_uses_ilias_co_dtd(self, tmp_path: Path) -> None:
+        """Manifest should use ILIAS CO DTD format (tiqi style)."""
+        manifest = create_manifest("6599701", "Test Pool", "Description", None, "1234567890")
+
+        assert (
+            '<!DOCTYPE Test SYSTEM "http://www.ilias.uni-koeln.de/download/dtd/ilias_co.dtd">'
+            in manifest
+        )
+        assert "il_1600_qpl_6599701" in manifest
+        assert '<Title Language="de">Test Pool</Title>' in manifest
+        assert '<Description Language="de">Description</Description>' in manifest
+
+    def test_manifest_pcid_uses_qpl_id(self, tmp_path: Path) -> None:
+        """PCID should use qpl_id, not question ID (tiqi style)."""
+        manifest = create_manifest("6599701", "Test Pool", "Description", None, "1234567890")
+
+        assert 'PCID="6599701"' in manifest
+
+    def test_manifest_trigger_uses_qpl_id(self, tmp_path: Path) -> None:
+        """TriggerQuestion Id should use qpl_id (tiqi style)."""
+        manifest = create_manifest("6599701", "Test Pool", "Description", None, "1234567890")
+
+        assert '<TriggerQuestion Id="6599701"></TriggerQuestion>' in manifest
+
+    def test_archive_uses_nic_1600(self, tmp_path: Path) -> None:
+        """Archive should use NIC 1600 (tiqi style)."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item ident="test" title="Test"/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="6599701",
+            folder_timestamp="1234567890",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            names = zf.namelist()
+            assert any("1234567890__1600__qpl_6599701" in n for n in names)
+
+    def test_qpl_file_contains_manifest_not_qti(self, tmp_path: Path) -> None:
+        """QPL file should contain manifest XML, not QTI content."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item ident="test" title="Test"/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="6599701",
+            folder_timestamp="1234567890",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            qpl_file = [
+                n for n in zf.namelist() if "qpl_" in n and "qti_" not in n and n.endswith(".xml")
+            ][0]
+            qpl_content = zf.read(qpl_file).decode("utf-8")
+
+            assert "Questionpool_Test" in qpl_content
+            assert "il_1600_qpl_6599701" in qpl_content
+            assert "questestinterop" not in qpl_content.lower()
+
+    def test_qti_file_contains_qti_content(self, tmp_path: Path) -> None:
+        """QTI file should contain question content, not manifest."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item ident="test" title="Test"/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="6599701",
+            folder_timestamp="1234567890",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            qti_file = [n for n in zf.namelist() if "qti_" in n][0]
+            qti_file_content = zf.read(qti_file).decode("utf-8")
+
+            assert "questestinterop" in qti_file_content
+            assert "Questionpool_Test" not in qti_file_content
+
+
 class TestCreateIliasArchive:
     """Tests for create_ilias_archive function."""
 
