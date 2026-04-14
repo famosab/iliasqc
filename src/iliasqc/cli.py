@@ -27,74 +27,80 @@ def main(argv: list[str] | None = None) -> int:
     convert_parser = subparsers.add_parser(
         "convert", help="Convert a question file to ILIAS zip archive"
     )
+    convert_parser.add_argument("input", help="Path to the input .txt file.")
     convert_parser.add_argument(
-        "input", help="Path to the input .txt file."
+        "-o",
+        "--output",
+        default=None,
+        help="Path for the output .zip file (default: same directory as input).",
     )
     convert_parser.add_argument(
-        "-o", "--output", default=None,
-        help="Path for the output .zip file (default: same directory as input)."
+        "-t", "--title", dest="title", default=None, help="Override the pool title."
     )
     convert_parser.add_argument(
-        "-t", "--title", default=None,
-        help="Override the pool title."
+        "-d", "--description", default=None, help="Override the pool description."
     )
     convert_parser.add_argument(
-        "-d", "--description", default=None,
-        help="Override the pool description."
-    )
-    convert_parser.add_argument(
-        "-p", "--points", type=float, default=None,
-        help="Only include questions with this point value."
+        "-p",
+        "--points",
+        type=float,
+        default=None,
+        help="Only include questions with this point value.",
     )
 
     combine_parser = subparsers.add_parser(
         "combine", help="Generate pools and find quiz combinations"
     )
+    combine_parser.add_argument("input", help="Path to the input .txt file.")
     combine_parser.add_argument(
-        "input", help="Path to the input .txt file."
+        "-t",
+        "--target",
+        dest="target_points",
+        type=float,
+        help="Target total points for quiz combinations.",
     )
     combine_parser.add_argument(
-        "target_points", type=float,
-        help="Target total points for quiz combinations."
+        "-o",
+        "--output",
+        default=None,
+        help="Directory for output files (default: same directory as input).",
     )
     combine_parser.add_argument(
-        "-o", "--output", default=None,
-        help="Directory for output files (default: same directory as input)."
+        "-c",
+        "--combinations",
+        type=int,
+        default=10,
+        help="Maximum number of combinations to show (default: 10).",
     )
     combine_parser.add_argument(
-        "-c", "--combinations", type=int, default=10,
-        help="Maximum number of combinations to show (default: 10)."
-    )
-    combine_parser.add_argument(
-        "--csv-only", action="store_true",
-        help="Only output CSV, skip the table display."
+        "--csv-only", action="store_true", help="Only output CSV, skip the table display."
     )
 
-    qti_parser = subparsers.add_parser(
-        "qti", help="Convert a question file to QTI XML format"
+    qti_parser = subparsers.add_parser("qti", help="Convert a question file to QTI XML format")
+    qti_parser.add_argument("input", help="Path to the input .txt file.")
+    qti_parser.add_argument(
+        "-o",
+        "--output",
+        default=None,
+        help="Path for the output .xml file (default: same directory as input).",
     )
     qti_parser.add_argument(
-        "input", help="Path to the input .txt file."
-    )
-    qti_parser.add_argument(
-        "-o", "--output", default=None,
-        help="Path for the output .xml file (default: same directory as input)."
-    )
-    qti_parser.add_argument(
-        "-p", "--points", type=float, default=None,
-        help="Only include questions with this point value."
+        "-p",
+        "--points",
+        type=float,
+        default=None,
+        help="Only include questions with this point value.",
     )
 
-    template_parser = subparsers.add_parser(
-        "template", help="Generate a question file template"
+    template_parser = subparsers.add_parser("template", help="Generate a question file template")
+    template_parser.add_argument(
+        "-o",
+        "--output",
+        default="questions_template.txt",
+        help="Path for the template file (default: questions_template.txt).",
     )
     template_parser.add_argument(
-        "-o", "--output", default="questions_template.txt",
-        help="Path for the template file (default: questions_template.txt)."
-    )
-    template_parser.add_argument(
-        "--no-examples", action="store_true",
-        help="Generate a template without example questions."
+        "--no-examples", action="store_true", help="Generate a template without example questions."
     )
 
     args = parser.parse_args(argv)
@@ -135,6 +141,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     elif args.command == "combine":
+        if args.target_points is None:
+            print("Error: --target/-t is required for combine command", file=sys.stderr)
+            return 1
         try:
             pools, combinations = generate_quiz_combinations(
                 args.input,

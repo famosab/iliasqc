@@ -137,9 +137,7 @@ def find_combinations(
     pool_by_points: dict[Fraction, PoolInfo] = {}
     for pool in pools:
         points = Fraction(str(pool.points_per_question))
-        max_count_by_points[points] = max(
-            max_count_by_points.get(points, 0), pool.question_count
-        )
+        max_count_by_points[points] = max(max_count_by_points.get(points, 0), pool.question_count)
         pool_by_points[points] = pool
 
     if not max_count_by_points:
@@ -174,7 +172,6 @@ def find_combinations(
 
     scored_combinations = []
     for selection in all_combinations:
-        used_categories = sum(1 for p in sorted_points if selection.get(p, 0) > 0)
         total_questions = sum(selection.get(p, 0) for p in sorted_points)
 
         combo = PoolCombination(
@@ -233,11 +230,13 @@ def export_combinations_csv(
         )
         return csv_path
 
-    pool_names = sorted(set(name for combo in combinations for name in combo.pools))
+    pool_names = sorted({name for combo in combinations for name in combo.pools})
 
     with open(csv_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["Rank", "Pool Combination", "Total Questions", "Balance Score"] + pool_names)
+        writer.writerow(
+            ["Rank", "Pool Combination", "Total Questions", "Balance Score"] + pool_names
+        )
 
         for rank, combo in enumerate(combinations, start=1):
             row = [
@@ -277,8 +276,6 @@ def format_combinations_table(
     if not combinations:
         return f"No valid combinations found for {target_points} points.\n"
 
-    pool_names = sorted(set(name for combo in combinations for name in combo.pools))
-
     col_widths = {
         "Rank": 5,
         "Questions": 10,
@@ -286,11 +283,7 @@ def format_combinations_table(
         "Combination": 50,
     }
 
-    header = (
-        f"Quiz Combinations for {target_points} Points\n"
-        f"{'=' * 70}\n\n"
-        f"Available Pools:\n"
-    )
+    header = f"Quiz Combinations for {target_points} Points\n{'=' * 70}\n\nAvailable Pools:\n"
 
     for pool in sorted(pools, key=lambda p: p.points_per_question, reverse=True):
         header += f"  - {pool.pool_name}: {pool.question_count} questions\n"
@@ -302,7 +295,9 @@ def format_combinations_table(
     lines = [header]
 
     for rank, combo in enumerate(combinations, start=1):
-        balance_indicator = "●●○○" if combo.balance_score > 0.5 else "●●●○" if combo.balance_score > 0.2 else "●●●●"
+        balance_indicator = (
+            "●●○○" if combo.balance_score > 0.5 else "●●●○" if combo.balance_score > 0.2 else "●●●●"
+        )
         summary = combo.get_summary()
         if len(summary) > col_widths["Combination"]:
             summary = summary[: col_widths["Combination"] - 3] + "..."

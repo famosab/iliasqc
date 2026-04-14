@@ -92,7 +92,7 @@ iliasqc convert questions.txt -o my_pool.zip
 Override title and description:
 
 ```bash
-iliasqc convert questions.txt -t "My Pool" -d "My description"
+iliasqc convert questions.txt -t "My Pool" --description "My description"
 ```
 
 Filter questions by point value:
@@ -106,7 +106,7 @@ iliasqc convert questions.txt -p 2
 Generate multiple pools (one per point value) and find combinations to reach a target:
 
 ```bash
-iliasqc combine questions.txt 20
+iliasqc combine questions.txt -t 20
 ```
 
 This will:
@@ -116,6 +116,7 @@ This will:
 4. Export a CSV file with the combinations
 
 Options:
+- `-t, --target`: Target total points (required)
 - `-o, --output`: Output directory (default: same as input file)
 - `-c, --combinations`: Maximum number of combinations to show (default: 10)
 - `--csv-only`: Only output CSV, skip the table display
@@ -249,7 +250,7 @@ ruff format src/ tests/
 
 ### Continuous Integration
 
-The project uses GitHub Actions for automated testing. The CI pipeline runs on every push and pull request, testing against Python 3.9, 3.10, 3.11, and 3.12.
+The project uses GitHub Actions for automated testing. The CI pipeline runs on every push and pull request, testing against Python 3.12, 3.13, and 3.14.
 
 ## License
 

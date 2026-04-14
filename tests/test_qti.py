@@ -1,10 +1,13 @@
 """Tests for iliasqc.qti."""
 
-import pytest
-
-from iliasqc.parser import Answer, Question
+from iliasqc.parser import (
+    QUESTION_TYPE_GAP,
+    QUESTION_TYPE_MC_MULTI,
+    QUESTION_TYPE_MC_SINGLE,
+    Answer,
+    Question,
+)
 from iliasqc.qti import convert_to_qti, create_question
-from iliasqc.parser import QUESTION_TYPE_GAP, QUESTION_TYPE_MC_MULTI, QUESTION_TYPE_MC_SINGLE
 
 
 class TestCreateQuestion:
@@ -23,9 +26,9 @@ class TestCreateQuestion:
 
         presentation, feedback, resprocessing = create_question(question)
 
-        assert "response_str ident=\"gap_0\"" in presentation
-        assert "varequal respident=\"gap_0\">42" in resprocessing
-        assert "setvar action=\"Add\">1.0" in resprocessing
+        assert 'response_str ident="gap_0"' in presentation
+        assert 'varequal respident="gap_0">42' in resprocessing
+        assert 'setvar action="Add">1.0' in resprocessing
         assert "_Response_0" in feedback
 
     def test_creates_single_choice_question_xml(self) -> None:
@@ -45,8 +48,8 @@ class TestCreateQuestion:
 
         presentation, feedback, resprocessing = create_question(question)
 
-        assert "response_lid ident=\"MCSR\"" in presentation
-        assert "rcardinality=\"Single\"" in presentation
+        assert 'response_lid ident="MCSR"' in presentation
+        assert 'rcardinality="Single"' in presentation
         assert "response_0" in feedback
 
     def test_creates_multiple_choice_question_xml(self) -> None:
@@ -67,8 +70,8 @@ class TestCreateQuestion:
 
         presentation, feedback, resprocessing = create_question(question)
 
-        assert "response_lid ident=\"MCMR\"" in presentation
-        assert "rcardinality=\"Multiple\"" in presentation
+        assert 'response_lid ident="MCMR"' in presentation
+        assert 'rcardinality="Multiple"' in presentation
 
 
 class TestConvertToQti:

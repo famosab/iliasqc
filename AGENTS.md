@@ -99,7 +99,7 @@ The project uses GitHub Actions for automated testing on every push and pull req
 
 The CI pipeline runs three jobs:
 
-1. **test** - Runs pytest on Python 3.9, 3.10, 3.11, 3.12
+1. **test** - Runs pytest on Python 3.12, 3.13, 3.14
    - Installs package with dev dependencies
    - Runs tests with verbose output
    - Generates coverage report
@@ -122,7 +122,7 @@ python_files = ["test_*.py"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py312"
 ```
 
 ## Future Development Ideas
@@ -161,7 +161,7 @@ target-version = "py39"
 
 ## Dependencies
 
-- Python 3.9+
+- Python 3.12+
 - Standard library only (no external dependencies at runtime)
 - Dev: pytest, pytest-cov, ruff
 

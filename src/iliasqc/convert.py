@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from iliasqc.ilias import create_ilias_archive
-from iliasqc.parser import extract_metadata, extract_point_values, parse_question_file
+from iliasqc.parser import extract_metadata, parse_question_file
 from iliasqc.qti import convert_to_qti
 
 
@@ -69,9 +69,7 @@ def txt_to_zip(
     if filter_points is not None:
         questions = [q for q in questions if q.points == filter_points]
         if not questions:
-            raise ValueError(
-                f"No questions found with {filter_points} points."
-            )
+            raise ValueError(f"No questions found with {filter_points} points.")
 
     qti_content = convert_to_qti(questions)
 
@@ -139,9 +137,7 @@ def txt_to_qti(
     if filter_points is not None:
         questions = [q for q in questions if q.points == filter_points]
         if not questions:
-            raise ValueError(
-                f"No questions found with {filter_points} points."
-            )
+            raise ValueError(f"No questions found with {filter_points} points.")
 
     qti_content = convert_to_qti(questions)
     output_path.write_text(qti_content, encoding="utf-8")

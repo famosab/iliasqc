@@ -5,14 +5,12 @@ from pathlib import Path
 import pytest
 
 from iliasqc.parser import (
-    Answer,
-    Question,
-    extract_metadata,
-    extract_point_values,
-    parse_question_file,
     QUESTION_TYPE_GAP,
     QUESTION_TYPE_MC_MULTI,
     QUESTION_TYPE_MC_SINGLE,
+    extract_metadata,
+    extract_point_values,
+    parse_question_file,
 )
 
 

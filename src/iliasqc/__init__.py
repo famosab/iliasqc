@@ -1,6 +1,6 @@
 """iliasqc – convert txt files into ILIAS-compatible question-pool zip archives."""
 
-from importlib.metadata import version, PackageNotFoundError
+from importlib.metadata import PackageNotFoundError, version
 
 from iliasqc.combine import (
     PoolCombination,

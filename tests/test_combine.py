@@ -1,6 +1,5 @@
 """Tests for iliasqc.combine."""
 
-import csv
 from pathlib import Path
 
 import pytest
@@ -79,8 +78,10 @@ class TestFindCombinations:
         assert all(c.total_points == 4.0 for c in combos)
         for combo in combos:
             total = sum(
-                c * p.points_per_question
-                for c, p in zip(combo.pools.values(), pools)
+                count * pool_by_name.points_per_question
+                for name, count in combo.pools.items()
+                for pool_by_name in pools
+                if pool_by_name.pool_name == name
             )
             assert total == 4.0
 
@@ -247,7 +248,7 @@ class TestFormatCombinationsTable:
 
         table = format_combinations_table(combinations, pools, target_points=4)
 
-        assert "1x 1pt" in table
+        assert "4x 1pt" in table
         assert "4" in table
 
     def test_empty_combinations_message(self) -> None:

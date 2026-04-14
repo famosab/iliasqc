@@ -1,6 +1,5 @@
 """Tests for iliasqc.ilias."""
 
-import csv
 import zipfile
 from pathlib import Path
 
@@ -144,9 +143,7 @@ class TestExportTargetPointCombinationsCsv:
             },
         ]
 
-        path, count = export_target_point_combinations_csv(
-            tmp_path, overview_rows, target_points=4
-        )
+        path, count = export_target_point_combinations_csv(tmp_path, overview_rows, target_points=4)
 
         assert path is not None
         assert path.exists()
@@ -161,6 +158,4 @@ class TestExportTargetPointCombinationsCsv:
     def test_raises_for_invalid_target_points(self, tmp_path: Path) -> None:
         """Should raise ValueError for invalid target points."""
         with pytest.raises(ValueError):
-            export_target_point_combinations_csv(
-                tmp_path, [], target_points=-1
-            )
+            export_target_point_combinations_csv(tmp_path, [], target_points=-1)

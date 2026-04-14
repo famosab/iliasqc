@@ -8,10 +8,8 @@ from iliasqc.parser import (
     QUESTION_TYPE_GAP,
     QUESTION_TYPE_MC_MULTI,
     QUESTION_TYPE_MC_SINGLE,
-    Answer,
     Question,
 )
-
 
 HEADER = """<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE questestinterop SYSTEM "ims_qtiasiv1p2p1.dtd">
@@ -188,15 +186,11 @@ def create_question(question: Question) -> tuple[str, str, str]:
 
             if i % 2 == 0:
                 escaped = _escape_xml(part)
-                presentation_elems += MATERIAL_TEMPLATE.format(
-                    text=before + escaped + after
-                )
+                presentation_elems += MATERIAL_TEMPLATE.format(text=before + escaped + after)
             else:
                 gap_no = i // 2
                 if i >= len(textparts) - 2:
-                    points = question.points - (gap_no) * round(
-                        question.points / gap_count, 2
-                    )
+                    points = question.points - (gap_no) * round(question.points / gap_count, 2)
                 presentation_elems += GAP_TEMPLATE.format(gap_no=gap_no)
                 resprocessing_elems += RESP_CONDITION_GAP.format(
                     gap_no=gap_no,
@@ -226,9 +220,7 @@ def create_question(question: Question) -> tuple[str, str, str]:
         answer_texts = [t for t in answer_texts if t]
 
         escaped = _escape_xml(question_part)
-        presentation_elems += MATERIAL_TEMPLATE.format(
-            text="&lt;p&gt;" + escaped + "&lt;/p&gt;"
-        )
+        presentation_elems += MATERIAL_TEMPLATE.format(text="&lt;p&gt;" + escaped + "&lt;/p&gt;")
 
         if is_multi:
             presentation_elems += MC_MULTI_OPEN
@@ -245,9 +237,7 @@ def create_question(question: Question) -> tuple[str, str, str]:
             answer_id = i
             answer_text = _escape_xml(answer.text)
 
-            presentation_elems += MC_LABEL_TEMPLATE.format(
-                ident=answer_id, text=answer_text
-            )
+            presentation_elems += MC_LABEL_TEMPLATE.format(ident=answer_id, text=answer_text)
 
             if answer.is_correct:
                 resp_ident = "MCMR" if is_multi else "MCSR"
@@ -303,9 +293,7 @@ def convert_to_qti(questions: list[Question]) -> str:
     output = HEADER
 
     for question in questions:
-        presentation_elems, feedback_elems, resprocessing_elems = create_question(
-            question
-        )
+        presentation_elems, feedback_elems, resprocessing_elems = create_question(question)
 
         output += ITEM_OPEN.format(ident=question.question_id, title=question.title)
         output += ITEM_METADATA.format(question_type=question.question_type)

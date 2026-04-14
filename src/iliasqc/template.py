@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 TEMPLATE_CONTENT_BASIC = """# TITLE: My Question Pool
 # DESCRIPTION: A collection of questions for my ILIAS course
 
@@ -91,9 +90,7 @@ It supports [gap]multiple[/gap] programming paradigms.
 """
 
 
-def generate_template(
-    output_path: str | Path, include_examples: bool = True
-) -> Path:
+def generate_template(output_path: str | Path, include_examples: bool = True) -> Path:
     """Generate a template question file.
 
     Parameters
@@ -117,15 +114,9 @@ def generate_template(
     output_path = Path(output_path)
 
     if output_path.exists():
-        raise FileExistsError(
-            f"Template file already exists: {output_path}"
-        )
+        raise FileExistsError(f"Template file already exists: {output_path}")
 
-    content = (
-        TEMPLATE_CONTENT_WITH_EXAMPLES
-        if include_examples
-        else TEMPLATE_CONTENT_BASIC
-    )
+    content = TEMPLATE_CONTENT_WITH_EXAMPLES if include_examples else TEMPLATE_CONTENT_BASIC
 
     output_path.write_text(content, encoding="utf-8")
     return output_path

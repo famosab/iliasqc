@@ -6,7 +6,6 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TextIO
 
 
 @dataclass
@@ -65,7 +64,7 @@ def extract_point_values(file_path: str | Path) -> list[float]:
     except Exception:
         pass
 
-    return sorted(list(point_values)) if point_values else [1.0]
+    return sorted(point_values) if point_values else [1.0]
 
 
 def extract_metadata(file_path: str | Path) -> tuple[str, str]:
@@ -145,7 +144,7 @@ def _parse_gap_text(text: str) -> str:
         if i % 2 == 0:
             result_parts.append(part)
         else:
-            result_parts.append(f"<br/>")
+            result_parts.append("<br/>")
     return "".join(result_parts)
 
 
