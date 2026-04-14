@@ -66,6 +66,56 @@ class TestCreateIliasArchive:
             assert any("qpl_" in name and name.endswith(".xml") for name in names)
             assert any("qti_" in name and name.endswith(".xml") for name in names)
 
+    def test_zip_has_ilias_export_structure(self, tmp_path: Path) -> None:
+        """Zip should have proper ILIAS export structure for import."""
+        qti_content = """<?xml version="1.0"?>
+        <questestinterop><item ident="test" title="Test"/></questestinterop>
+        """
+
+        result = create_ilias_archive(
+            qti_content,
+            tmp_path,
+            "Test Pool",
+            "Test Description",
+            unique_id="1234567",
+        )
+
+        with zipfile.ZipFile(result) as zf:
+            names = set(zf.namelist())
+            folder_prefix = "1234567"
+            has_manifest = any(n.endswith("/manifest.xml") and folder_prefix in n for n in names)
+            has_export = any("Modules/TestQuestionPool/set_1/export.xml" in n for n in names)
+            has_objects_dir = any(
+                "objects/" in n and n.rstrip("/").endswith("objects") for n in names
+            )
+            has_objects_dot = any("objects/." in n for n in names)
+            has_folder_root = any(n.count("/") == 1 and f"qpl_{folder_prefix}" in n for n in names)
+            assert has_manifest, f"Missing manifest.xml in {names}"
+            assert has_export, f"Missing export.xml in {names}"
+            assert has_objects_dir, f"Missing objects/ directory in {names}"
+            assert has_objects_dot, f"Missing objects/. in {names}"
+            assert has_folder_root, f"Missing folder root in {names}"
+
+    def test_export_xml_has_valid_structure(self, tmp_path: Path) -> None:
+        """export.xml should have valid ILIAS export structure."""
+        from iliasqc.ilias import create_export_xml
+
+        export = create_export_xml("12345", "54321")
+        assert '<?xml version="1.0"' in export
+        assert "exp:Export" in export
+        assert 'Entity="qpl"' in export
+        assert 'Id="12345"' in export
+
+    def test_manifest_xml_has_valid_structure(self, tmp_path: Path) -> None:
+        """manifest.xml should have valid ILIAS manifest structure."""
+        from iliasqc.ilias import create_manifest_file
+
+        manifest = create_manifest_file("12345", "Test Pool")
+        assert '<?xml version="1.0"' in manifest
+        assert "Manifest" in manifest
+        assert 'MainEntity="qpl"' in manifest
+        assert "Test Pool" in manifest
+
 
 class TestUpdatePoolOverviewCsv:
     """Tests for update_pool_overview_csv function."""
