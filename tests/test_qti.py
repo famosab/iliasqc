@@ -90,16 +90,16 @@ class TestConvertToQti:
                     Answer(text="B", is_correct=False),
                 ],
                 line_number=1,
-                question_id="q_1",
+                question_id="1",
             ),
         ]
 
         result = convert_to_qti(questions)
 
-        assert '<?xml version="1.0" encoding="utf-8"?>' in result
-        assert "<questestinterop>" in result
-        assert "</questestinterop>" in result
-        assert 'item ident="q_1"' in result
+        assert '<?xml version="1.0" encoding="UTF-8"?>' in result
+        assert "<test_question_pool" in result
+        assert "</test_question_pool>" in result
+        assert 'item ident="qst_1"' in result
         assert 'title="Q1"' in result
 
     def test_handles_multiple_questions(self) -> None:
@@ -112,7 +112,7 @@ class TestConvertToQti:
                 points=1.0,
                 answers=[Answer(text="A", is_correct=True)],
                 line_number=1,
-                question_id="q_1",
+                question_id="1",
             ),
             Question(
                 question_type=QUESTION_TYPE_GAP,
@@ -120,14 +120,14 @@ class TestConvertToQti:
                 text="[gap]answer[/gap]",
                 points=1.0,
                 line_number=5,
-                question_id="q_2",
+                question_id="5",
             ),
         ]
 
         result = convert_to_qti(questions)
 
-        assert 'item ident="q_1"' in result
-        assert 'item ident="q_2"' in result
+        assert 'item ident="qst_1"' in result
+        assert 'item ident="qst_5"' in result
         assert 'title="Q1"' in result
         assert 'title="Q2"' in result
 

@@ -197,7 +197,7 @@ def parse_question_file(file_path: str | Path) -> list[Question]:
                 if current_question is not None:
                     questions.append(current_question)
 
-                question_id = f"il_1600_qst_{line_no}"
+                question_id = str(line_no)
 
                 question_type = QUESTION_TYPE_MC_SINGLE
                 if stripped[3:6] == "[s]":

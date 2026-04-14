@@ -55,6 +55,8 @@ def txt_to_zip(
     if output_path is None:
         output_path = input_path.with_suffix(".zip")
     output_path = Path(output_path)
+    if output_path.is_dir():
+        output_path = output_path / (input_path.stem + ".zip")
 
     if title is None or description is None:
         extracted_title, extracted_desc = extract_metadata(input_path)
