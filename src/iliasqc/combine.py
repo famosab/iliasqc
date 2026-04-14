@@ -59,6 +59,8 @@ def generate_pools_by_points(
     list[PoolInfo]
         List of PoolInfo objects for each generated pool.
     """
+    import hashlib
+
     from iliasqc.convert import txt_to_zip
     from iliasqc.parser import extract_metadata, extract_point_values, parse_question_file
 
@@ -81,10 +83,14 @@ def generate_pools_by_points(
             continue
 
         pool_title = f"{title} ({int(points)} points)"
-        pool_filename = f"{title}_{int(points)}pt_pool.zip"
+        unique_id = str(6599700 + int(points))
+        fingerprint = f"{unique_id}\n{pool_title}\n{description}\n{input_path}".encode()
+        digest = hashlib.sha1(fingerprint).hexdigest()
+        timestamp_int = int(digest[:12], 16) % 9000000000 + 1000000000
+        pool_filename = f"{timestamp_int}__1600__qpl_{unique_id}.zip"
         pool_path = output_dir / pool_filename
 
-        txt_to_zip(
+        actual_path = txt_to_zip(
             input_path,
             pool_path,
             title=pool_title,
@@ -98,7 +104,7 @@ def generate_pools_by_points(
                 zip_filename=pool_filename,
                 question_count=question_count,
                 points_per_question=points,
-                zip_path=pool_path,
+                zip_path=actual_path,
             )
         )
 

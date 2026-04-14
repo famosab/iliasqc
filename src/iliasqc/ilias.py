@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import os
 import shutil
 import zipfile
@@ -105,6 +106,7 @@ def create_ilias_archive(
     description: str,
     unique_id: str | None = None,
     question_ids: list[str] | None = None,
+    folder_timestamp: str | None = None,
 ) -> Path:
     """Create ILIAS-compatible archive structure.
 
@@ -121,6 +123,9 @@ def create_ilias_archive(
     unique_id:
         Optional unique ID for the archive. If not provided,
         a deterministic ID is generated from the content.
+    folder_timestamp:
+        Optional timestamp for the folder/zip name. If not provided,
+        a deterministic timestamp is generated from the content.
 
     Returns
     -------
@@ -133,8 +138,14 @@ def create_ilias_archive(
     qpl_id = unique_id
     qti_id = unique_id
 
+    if folder_timestamp is None:
+        fingerprint = f"{unique_id}\n{title}\n{description}\n{qti_content}".encode()
+        digest = hashlib.sha1(fingerprint).hexdigest()
+        timestamp_int = int(digest[:12], 16) % 9000000000 + 1000000000
+        folder_timestamp = str(timestamp_int)
+
     output_dir = Path(output_dir)
-    folder_name = f"{qpl_id}__1600__qpl_{qpl_id}"
+    folder_name = f"{folder_timestamp}__1600__qpl_{qpl_id}"
     temp_dir = output_dir / folder_name
 
     if temp_dir.exists():
@@ -151,11 +162,11 @@ def create_ilias_archive(
     manifest_xml = create_manifest_file(qpl_id, title)
     (temp_dir / "manifest.xml").write_text(manifest_xml, encoding="utf-8")
 
-    qpl_filename = temp_dir / f"{qpl_id}__1600__qpl_{qpl_id}.xml"
+    qpl_filename = temp_dir / f"{folder_timestamp}__1600__qpl_{qpl_id}.xml"
     qpl_manifest = create_manifest(qpl_id, title, description, question_ids)
     qpl_filename.write_text(qpl_manifest, encoding="utf-8")
 
-    qti_filename = temp_dir / f"{qpl_id}__1600__qti_{qpl_id}.xml"
+    qti_filename = temp_dir / f"{folder_timestamp}__1600__qti_{qpl_id}.xml"
     qti_filename.write_text(qti_content, encoding="utf-8")
 
     zip_filename = output_dir / f"{folder_name}.zip"

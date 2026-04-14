@@ -90,8 +90,9 @@ def txt_to_zip(
         if output_path.exists():
             output_path.unlink()
         archive_path.rename(output_path)
+        return output_path.resolve()
 
-    return output_path.resolve()
+    return archive_path.resolve()
 
 
 def txt_to_qti(
