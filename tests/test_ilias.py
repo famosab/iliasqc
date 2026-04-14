@@ -159,6 +159,27 @@ class TestCreateIliasArchive:
         export = create_export_xml("12345", "54321")
         assert "http://www.ilias.de/Modules/TestQuestionPool/htlm/4_1" in export
 
+    def test_qpl_has_pcid_attribute(self) -> None:
+        """QPL should have PCID attribute in PageContent."""
+        from iliasqc.ilias import create_manifest
+
+        manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
+        assert 'PageContent PCID="4"' in manifest
+
+    def test_trigger_question_uses_id_without_prefix(self) -> None:
+        """TriggerQuestion Id should not have il_1600_qst_ prefix."""
+        from iliasqc.ilias import create_manifest
+
+        manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
+        assert '<TriggerQuestion Id="4"></TriggerQuestion>' in manifest
+
+    def test_keyword_uses_language_en(self) -> None:
+        """Keyword should use Language='en'."""
+        from iliasqc.ilias import create_manifest
+
+        manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
+        assert '<Keyword Language="en"></Keyword>' in manifest
+
 
 class TestUpdatePoolOverviewCsv:
     """Tests for update_pool_overview_csv function."""

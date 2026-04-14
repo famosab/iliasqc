@@ -45,10 +45,12 @@ def create_manifest(
         timestamp = qpl_id
 
     normalized_ids = [qid.replace("il_1600_qst_", "") for qid in question_ids]
-    qref_entries = "".join(f'<Question QRef="il_1600_qst_{qid}"/>' for qid in normalized_ids)
+    qref_entries = "".join(f'<Question QRef="{qid}"/>' for qid in normalized_ids)
     trigger_entries = "".join(
-        f'<TriggerQuestion Id="il_1600_qst_{qid}"></TriggerQuestion>' for qid in normalized_ids
+        f'<TriggerQuestion Id="{qid}"></TriggerQuestion>' for qid in normalized_ids
     )
+
+    pcid = normalized_ids[0] if normalized_ids else qpl_id
 
     manifest = (
         '<?xml version="1.0" encoding="utf-8"?>'
@@ -61,7 +63,7 @@ def create_manifest(
         f'<Title Language="de">{title}</Title>'
         '<Language Language="de"/>'
         f'<Description Language="de">{description}</Description>'
-        '<Keyword Language="de"></Keyword>'
+        '<Keyword Language="en"></Keyword>'
         "</General>"
         "</MetaData>"
         "<Settings>"
@@ -69,7 +71,7 @@ def create_manifest(
         "<SkillService>0</SkillService>"
         "</Settings>"
         "<PageObject>"
-        "<PageContent>"
+        f'<PageContent PCID="{pcid}">'
         f"{qref_entries}"
         "</PageContent>"
         "</PageObject>"
