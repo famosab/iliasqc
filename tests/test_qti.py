@@ -131,8 +131,8 @@ class TestConvertToQti:
         assert 'title="Q1"' in result
         assert 'title="Q2"' in result
 
-    def test_decvar_has_correct_attributes(self) -> None:
-        """decvar should have varname, vartype, minvalue, and maxvalue attributes."""
+    def test_decvar_has_empty_format(self) -> None:
+        """decvar should be empty for ILIAS compatibility."""
         questions = [
             Question(
                 question_type=QUESTION_TYPE_MC_SINGLE,
@@ -147,28 +147,8 @@ class TestConvertToQti:
 
         result = convert_to_qti(questions)
 
-        assert 'decvar varname="SCORE"' in result
-        assert 'vartype="Integer"' in result
-        assert 'minvalue="0"' in result
-        assert 'maxvalue="2"' in result
-
-    def test_decvar_uses_question_points(self) -> None:
-        """decvar maxvalue should match question points."""
-        questions = [
-            Question(
-                question_type=QUESTION_TYPE_MC_SINGLE,
-                title="Q1",
-                text="<br/>_ A",
-                points=3.0,
-                answers=[Answer(text="A", is_correct=True)],
-                line_number=1,
-                question_id="q_1",
-            ),
-        ]
-
-        result = convert_to_qti(questions)
-
-        assert 'maxvalue="3"' in result
+        assert "<decvar>" in result
+        assert "</decvar>" in result
 
     def test_correct_answer_has_question_points(self) -> None:
         """Correct answer should have question points in setvar."""

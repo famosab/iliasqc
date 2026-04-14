@@ -82,12 +82,8 @@ MC_LABEL_TEMPLATE = """            <response_label ident="{ident}">
 
 RESPONSE_PROCESSING_OPEN = """    <resprocessing>
       <outcomes>
-        <decvar varname="SCORE" vartype="Integer" minvalue="0" maxvalue="{points}"/>
-      </outcomes>
-"""
-RESPONSE_PROCESSING_OPEN_DEFAULT = """    <resprocessing>
-      <outcomes>
-        <decvar varname="SCORE" vartype="Integer" minvalue="0" maxvalue="1"/>
+        <decvar>
+        </decvar>
       </outcomes>
 """
 RESPONSE_PROCESSING_CLOSE = "    </resprocessing>\n"
@@ -299,15 +295,12 @@ def convert_to_qti(questions: list[Question]) -> str:
     for question in questions:
         presentation_elems, feedback_elems, resprocessing_elems = create_question(question)
 
-        points = float(question.points)
-        rp_open = RESPONSE_PROCESSING_OPEN.format(points=int(points))
-
         output += ITEM_OPEN.format(ident=question.question_id, title=question.title)
         output += ITEM_METADATA.format(question_type=question.question_type)
         output += PRESENTATION_OPEN.format(title=question.title)
         output += presentation_elems
         output += PRESENTATION_CLOSE
-        output += rp_open
+        output += RESPONSE_PROCESSING_OPEN
         output += resprocessing_elems
         output += RESPONSE_PROCESSING_CLOSE
         output += feedback_elems
