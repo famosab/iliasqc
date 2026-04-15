@@ -19,7 +19,7 @@ HEADER = """<?xml version="1.0" encoding="utf-8"?>
 
 FOOTER = "</questestinterop>\n"
 
-ITEM_OPEN = '  <item ident="{question_id}" title="{title}" maxattempts="1">\n'
+ITEM_OPEN = '  <item ident="{question_id}" title="{title_escaped}" maxattempts="1">\n'
 ITEM_CLOSE = "  </item>\n"
 
 ITEM_METADATA = """    <qticomment/>
@@ -54,7 +54,7 @@ ITEM_METADATA = """    <qticomment/>
     </itemmetadata>
 """
 
-PRESENTATION_OPEN = '    <presentation label="{title}">\n      <flow>\n'
+PRESENTATION_OPEN = '    <presentation label="{title_escaped}">\n      <flow>\n'
 PRESENTATION_CLOSE = "      </flow>\n    </presentation>\n"
 
 MATERIAL_TEMPLATE = '        <material>\n          <mattext texttype="text/xhtml">{text}</mattext>\n        </material>\n'
@@ -140,6 +140,17 @@ GAP_RE = r"\[gap\]([^\[\]]*)\[/gap\]"
 
 def _escape_xml(text: str) -> str:
     """Escape special XML characters."""
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
+def _escape_xml_attr(text: str) -> str:
+    """Escape special XML characters for attribute values."""
     return (
         text.replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -275,14 +286,15 @@ def convert_to_qti(questions: list[Question]) -> str:
 
     for question in questions:
         presentation_elems, feedback_elems, resprocessing_elems = create_question(question)
+        title_escaped = _escape_xml_attr(question.title)
 
-        output += ITEM_OPEN.format(question_id=question.question_id, title=question.title)
+        output += ITEM_OPEN.format(question_id=question.question_id, title_escaped=title_escaped)
         output += ITEM_METADATA.format(
             question_type=question.question_type,
             question_id=question.question_id,
             title=question.title,
         )
-        output += PRESENTATION_OPEN.format(title=question.title)
+        output += PRESENTATION_OPEN.format(title_escaped=title_escaped)
         output += presentation_elems
         output += PRESENTATION_CLOSE
         output += RESPONSE_PROCESSING_OPEN
