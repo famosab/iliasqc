@@ -167,3 +167,29 @@ class TestConvertToQti:
         result = convert_to_qti(questions)
 
         assert '<setvar action="Add">2.000000</setvar>' in result
+
+    def test_escapes_quotes_in_title_attributes(self) -> None:
+        """Quotes in question titles should be escaped in XML attributes."""
+        questions = [
+            Question(
+                question_type=QUESTION_TYPE_MC_SINGLE,
+                title='Sequence X="ACGU" is from alphabet {A,C,G,U}. What is |X|?',
+                text="<br/>_ 4<br/>- 12",
+                points=2.0,
+                answers=[
+                    Answer(text="4", is_correct=False),
+                    Answer(text="12", is_correct=True),
+                ],
+                line_number=1,
+                question_id="q_1",
+            ),
+        ]
+
+        result = convert_to_qti(questions)
+
+        assert (
+            'title="Sequence X=&quot;ACGU&quot; is from alphabet {A,C,G,U}. What is |X|?"' in result
+        )
+        assert (
+            'label="Sequence X=&quot;ACGU&quot; is from alphabet {A,C,G,U}. What is |X|?"' in result
+        )
