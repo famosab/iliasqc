@@ -360,3 +360,101 @@ def generate_quiz_combinations(
         )
 
     return pools, combinations
+
+
+def generate_quiz_from_combination(
+    input_path: str | Path,
+    pools: list[PoolInfo],
+    combination: PoolCombination,
+    output_dir: str | Path,
+) -> Path:
+    """Generate a quiz zip from a pool combination.
+
+    This creates a quiz archive from the original question file by
+    selecting questions that match the quantities specified in the combination.
+
+    Parameters
+    ----------
+    input_path:
+        Path to the original question text file.
+    pools:
+        List of available pools.
+    combination:
+        The selected combination of pools to use.
+    output_dir:
+        Directory for the output quiz zip.
+
+    Returns
+    -------
+    Path
+        Path to the created quiz zip file.
+    """
+    from iliasqc.convert import txt_to_quiz_zip
+    from iliasqc.parser import extract_metadata, parse_question_file
+
+    input_path = Path(input_path)
+    output_dir = Path(output_dir)
+
+    pool_questions_by_points: dict[float, list] = {}
+    for pool in pools:
+        points = pool.points_per_question
+        if points not in pool_questions_by_points:
+            pool_questions_by_points[points] = []
+        pool_questions_by_points[points].append(pool)
+
+    all_questions = parse_question_file(input_path)
+    title, description = extract_metadata(input_path)
+
+    questions_to_use = []
+    for pool in pools:
+        pool_name = pool.pool_name
+        if pool_name in combination.pools:
+            count = combination.pools[pool_name]
+            if count > 0:
+                pool_points = pool.points_per_question
+                matching_questions = [q for q in all_questions if q.points == pool_points]
+                needed = matching_questions[:count]
+                questions_to_use.extend(needed)
+
+    if not questions_to_use:
+        raise ValueError("No questions could be selected for the quiz.")
+
+    output_path = output_dir / f"quiz_{int(combination.total_points)}pt.zip"
+
+    temp_file = output_dir / f"_temp_quiz_{int(combination.total_points)}pt.txt"
+    lines = [f"# TITLE: {title} - Quiz ({int(combination.total_points)} points)"]
+    if description:
+        lines.append(f"# DESCRIPTION: {description}")
+    lines.append("")
+
+    from iliasqc.parser import QUESTION_TYPE_GAP, QUESTION_TYPE_MC_MULTI, QUESTION_TYPE_MC_SINGLE
+
+    for q in questions_to_use:
+        type_marker = {
+            QUESTION_TYPE_MC_SINGLE: "[s]",
+            QUESTION_TYPE_MC_MULTI: "[m]",
+            QUESTION_TYPE_GAP: "[g]",
+        }.get(q.question_type, "[s]")
+
+        lines.append(f"[t]{type_marker} {q.title} @{int(q.points)}")
+        lines.append(q.text)
+
+        if q.question_type in (QUESTION_TYPE_MC_SINGLE, QUESTION_TYPE_MC_MULTI):
+            for answer in q.answers:
+                prefix = "_" if answer.is_correct else "-"
+                lines.append(f"{prefix} {answer.text}")
+
+    temp_file.write_text("\n".join(lines), encoding="utf-8")
+
+    try:
+        quiz_title = f"Quiz ({int(combination.total_points)} points)"
+        quiz_path = txt_to_quiz_zip(
+            temp_file,
+            output_path,
+            title=quiz_title,
+            description=f"Quiz: {combination.total_questions} questions, {combination.total_points} points",
+        )
+        return quiz_path
+    finally:
+        if temp_file.exists():
+            temp_file.unlink()

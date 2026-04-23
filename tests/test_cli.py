@@ -134,3 +134,57 @@ class TestCliMain:
         assert result == 1
         output = capsys.readouterr().err
         assert "--target" in output
+
+    def test_combine_with_generate_quiz(self, tmp_path, capsys):
+        """combine should generate quiz when --generate-quiz is specified."""
+
+        content = """# TITLE: Test
+        [t][s] Q1 @1
+        _ A
+        - B
+
+        [t][s] Q2 @2
+        _ C
+        - D
+        """
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = main(["combine", str(input_file), "-t", "3", "--generate-quiz", "1"])
+        assert result == 0
+        output = capsys.readouterr().out
+        assert "Generated quiz:" in output
+
+    def test_quiz_command(self, tmp_path, capsys):
+        """quiz subcommand should create quiz zip archive."""
+
+        content = """# TITLE: Test Quiz
+        [t][s] Question @1
+        _ A
+        - B
+        """
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = main(["quiz", str(input_file)])
+
+        assert result == 0
+        output = capsys.readouterr().out
+        assert "Created:" in output
+
+    def test_quiz_with_title_flag(self, tmp_path, capsys):
+        """quiz should accept -t / --title flag."""
+
+        content = """# TITLE: Test
+        [t][s] Question @1
+        _ A
+        - B
+        """
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        result = main(["quiz", str(input_file), "-t", "Custom Quiz Title"])
+        assert result == 0
+
+        result = main(["quiz", str(input_file), "--title", "Another Quiz Title"])
+        assert result == 0
