@@ -224,7 +224,8 @@ def txt_to_quiz_zip(
     qti_content = convert_to_qti(questions)
 
     output_dir = output_path.parent
-    unique_id = str(6599700 + int(questions[0].points if questions else 1))
+    unique_id = "6599701"
+    question_ids = [q.question_id for q in questions]
 
     archive_path = create_integrated_quiz_archive(
         qti_content,
@@ -232,6 +233,7 @@ def txt_to_quiz_zip(
         title,
         description or "",
         unique_id=unique_id,
+        question_ids=question_ids,
     )
 
     if output_path != archive_path:
