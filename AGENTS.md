@@ -69,6 +69,8 @@ Run linting:
 ruff check src/ tests/
 ```
 
+**Always run linting at the end of development to avoid lint errors in the CI/push pipeline.**
+
 ## Key Design Decisions
 
 - Output format is compatible with ILIAS import (QTI 1.2, manifest with ILIAS CO DTD)

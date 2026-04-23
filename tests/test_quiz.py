@@ -3,8 +3,6 @@
 import zipfile
 from pathlib import Path
 
-import pytest
-
 from iliasqc.quiz import (
     create_integrated_quiz_archive,
     create_quiz_archive,
