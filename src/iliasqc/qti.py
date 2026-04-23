@@ -19,7 +19,7 @@ HEADER = """<?xml version="1.0" encoding="utf-8"?>
 
 FOOTER = "</questestinterop>\n"
 
-ITEM_OPEN = '  <item ident="{ident}" title="{title}" maxattempts="1">\n'
+ITEM_OPEN = '  <item ident="{question_id}" title="{title_escaped}" maxattempts="1">\n'
 ITEM_CLOSE = "  </item>\n"
 
 ITEM_METADATA = """    <qticomment/>
@@ -36,7 +36,7 @@ ITEM_METADATA = """    <qticomment/>
         </qtimetadatafield>
         <qtimetadatafield>
           <fieldlabel>AUTHOR</fieldlabel>
-          <fieldentry>iliasqc - ILIAS Question Converter</fieldentry>
+          <fieldentry>TIQI - The ILIAS Question Importer</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
           <fieldlabel>textgaprating</fieldlabel>
@@ -54,7 +54,7 @@ ITEM_METADATA = """    <qticomment/>
     </itemmetadata>
 """
 
-PRESENTATION_OPEN = '    <presentation label="{title}">\n      <flow>\n'
+PRESENTATION_OPEN = '    <presentation label="{title_escaped}">\n      <flow>\n'
 PRESENTATION_CLOSE = "      </flow>\n    </presentation>\n"
 
 MATERIAL_TEMPLATE = '        <material>\n          <mattext texttype="text/xhtml">{text}</mattext>\n        </material>\n'
@@ -89,32 +89,32 @@ RESPONSE_PROCESSING_OPEN = """    <resprocessing>
 RESPONSE_PROCESSING_CLOSE = "    </resprocessing>\n"
 
 RESP_CONDITION_GAP = """      <respcondition continue="Yes">
-        <conditionvar>
-          <varequal respident="gap_{gap_no}">{answer}</varequal>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="{gap_no}_Response_0"/>
-      </respcondition>
+         <conditionvar>
+           <varequal respident="gap_{gap_no}">{answer}</varequal>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="{gap_no}_Response_0"/>
+       </respcondition>
 """
 
 RESP_CONDITION_MC_CHECKED = """      <respcondition continue="Yes">
-        <conditionvar>
-          <varequal respident="{resp_ident}">{answer_id}</varequal>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="response_{answer_id}"/>
-      </respcondition>
+         <conditionvar>
+           <varequal respident="MCSR">{answer_id}</varequal>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="response_{answer_id}"/>
+       </respcondition>
 """
 
 RESP_CONDITION_MC_UNCHECKED = """      <respcondition continue="Yes">
-        <conditionvar>
-          <not>
-          <varequal respident="{resp_ident}">{answer_id}</varequal>
-          </not>
-        </conditionvar>
-        <setvar action="Add">{points}</setvar>
-        <displayfeedback feedbacktype="Response" linkrefid="Response_{answer_id}"/>
-      </respcondition>
+         <conditionvar>
+           <not>
+           <varequal respident="MCSR">{answer_id}</varequal>
+           </not>
+         </conditionvar>
+         <setvar action="Add">{points:.6f}</setvar>
+         <displayfeedback feedbacktype="Response" linkrefid="Response_{answer_id}"/>
+       </respcondition>
 """
 
 ITEM_FEEDBACK_GAP = """    <itemfeedback ident="{gap_no}_Response_0" view="All">
@@ -140,6 +140,17 @@ GAP_RE = r"\[gap\]([^\[\]]*)\[/gap\]"
 
 def _escape_xml(text: str) -> str:
     """Escape special XML characters."""
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
+
+
+def _escape_xml_attr(text: str) -> str:
+    """Escape special XML characters for attribute values."""
     return (
         text.replace("&", "&amp;")
         .replace("<", "&lt;")
@@ -202,22 +213,12 @@ def create_question(question: Question) -> tuple[str, str, str]:
     elif question.question_type in (QUESTION_TYPE_MC_SINGLE, QUESTION_TYPE_MC_MULTI):
         is_multi = question.question_type == QUESTION_TYPE_MC_MULTI
 
-        mc_split_pattern = "<br/>- "
-        normalized_text = question.text.replace("<br/>_", "<br/>- _")
-        parts = normalized_text.split(mc_split_pattern)
-
-        question_part = ""
-        answer_texts: list[str] = []
-        for i, part in enumerate(parts):
-            if i == 0:
-                if part.startswith("_ ") or part.startswith("- "):
-                    answer_texts.append(part)
-                else:
-                    question_part = part
-            else:
-                answer_texts.append(part)
-
-        answer_texts = [t for t in answer_texts if t]
+        text_parts = question.text.split("<br/>")
+        question_part = text_parts[0] if text_parts else ""
+        if question_part.startswith("_ ") or question_part.startswith("- "):
+            question_part = ""
+        if not question_part:
+            question_part = question.title
 
         escaped = _escape_xml(question_part)
         presentation_elems += MATERIAL_TEMPLATE.format(text="&lt;p&gt;" + escaped + "&lt;/p&gt;")
@@ -228,10 +229,9 @@ def create_question(question: Question) -> tuple[str, str, str]:
             presentation_elems += MC_SINGLE_OPEN
 
         if is_multi:
-            points_per_answer = round(question.points / len(answer_texts), 2)
+            points_per_answer = round(question.points / len(question.answers), 2)
         else:
             points_per_answer = question.points
-        points_assigned = 0.0
 
         for i, answer in enumerate(question.answers):
             answer_id = i
@@ -240,32 +240,24 @@ def create_question(question: Question) -> tuple[str, str, str]:
             presentation_elems += MC_LABEL_TEMPLATE.format(ident=answer_id, text=answer_text)
 
             if answer.is_correct:
-                resp_ident = "MCMR" if is_multi else "MCSR"
                 resprocessing_elems += RESP_CONDITION_MC_CHECKED.format(
-                    resp_ident=resp_ident,
                     answer_id=answer_id,
                     points=points_per_answer,
                 )
-                points_assigned += points_per_answer
 
                 if is_multi:
                     resprocessing_elems += RESP_CONDITION_MC_UNCHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=0,
                     )
             else:
-                resp_ident = "MCMR" if is_multi else "MCSR"
                 if is_multi:
                     resprocessing_elems += RESP_CONDITION_MC_UNCHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=points_per_answer,
                     )
-                    points_assigned += points_per_answer
                 else:
                     resprocessing_elems += RESP_CONDITION_MC_CHECKED.format(
-                        resp_ident=resp_ident,
                         answer_id=answer_id,
                         points=0,
                     )
@@ -294,10 +286,15 @@ def convert_to_qti(questions: list[Question]) -> str:
 
     for question in questions:
         presentation_elems, feedback_elems, resprocessing_elems = create_question(question)
+        title_escaped = _escape_xml_attr(question.title)
 
-        output += ITEM_OPEN.format(ident=question.question_id, title=question.title)
-        output += ITEM_METADATA.format(question_type=question.question_type)
-        output += PRESENTATION_OPEN.format(title=question.title)
+        output += ITEM_OPEN.format(question_id=question.question_id, title_escaped=title_escaped)
+        output += ITEM_METADATA.format(
+            question_type=question.question_type,
+            question_id=question.question_id,
+            title=question.title,
+        )
+        output += PRESENTATION_OPEN.format(title_escaped=title_escaped)
         output += presentation_elems
         output += PRESENTATION_CLOSE
         output += RESPONSE_PROCESSING_OPEN

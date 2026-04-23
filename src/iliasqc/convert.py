@@ -16,6 +16,8 @@ def txt_to_zip(
     title: str | None = None,
     description: str | None = None,
     filter_points: float | None = None,
+    unique_id: str | None = None,
+    folder_timestamp: str | None = None,
 ) -> Path:
     """Convert a question text file to an ILIAS-compatible zip archive.
 
@@ -54,6 +56,8 @@ def txt_to_zip(
     if output_path is None:
         output_path = input_path.with_suffix(".zip")
     output_path = Path(output_path)
+    if output_path.is_dir():
+        output_path = output_path / (input_path.stem + ".zip")
 
     if title is None or description is None:
         extracted_title, extracted_desc = extract_metadata(input_path)
@@ -75,7 +79,9 @@ def txt_to_zip(
     qti_content = convert_to_qti(questions)
 
     output_dir = output_path.parent
-    unique_id = str(6599700 + int(questions[0].points if questions else 1))
+    if unique_id is None:
+        unique_id = "6599701"
+    question_ids = [q.question_id for q in questions]
 
     archive_path = create_ilias_archive(
         qti_content,
@@ -83,14 +89,17 @@ def txt_to_zip(
         title,
         description or "",
         unique_id=unique_id,
+        question_ids=question_ids,
+        folder_timestamp=folder_timestamp,
     )
 
     if output_path != archive_path:
         if output_path.exists():
             output_path.unlink()
         archive_path.rename(output_path)
+        return output_path.resolve()
 
-    return output_path.resolve()
+    return archive_path.resolve()
 
 
 def txt_to_qti(

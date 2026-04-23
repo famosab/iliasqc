@@ -6,6 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from iliasqc import __version__
 from iliasqc.combine import (
     export_combinations_csv,
     format_combinations_table,
@@ -18,10 +19,15 @@ from iliasqc.template import generate_template
 
 def main(argv: list[str] | None = None) -> int:
     """Entry point for the ``iliasqc`` command."""
+    version_label = f"%(prog)s {__version__}"
     parser = argparse.ArgumentParser(
         prog="iliasqc",
-        description="Convert txt question files into ILIAS-compatible zip archives.",
+        description=(
+            "Convert txt question files into ILIAS-compatible zip archives. "
+            f"(version {__version__})"
+        ),
     )
+    parser.add_argument("--version", action="version", version=version_label)
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
