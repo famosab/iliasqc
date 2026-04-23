@@ -69,7 +69,12 @@ Run linting:
 ruff check src/ tests/
 ```
 
-**Always run linting at the end of development to avoid lint errors in the CI/push pipeline.**
+Run formatting:
+```bash
+ruff format --check src/ tests/
+```
+
+**Always run formatting and linting at the end of development to avoid errors in the CI/push pipeline.**
 
 ## Key Design Decisions
 

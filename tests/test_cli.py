@@ -189,6 +189,7 @@ class TestCliMain:
 
         result = main(["quiz", str(input_file), "--title", "Another Quiz Title"])
         assert result == 0
+
     def test_version_flag_outputs_version(self, capsys):
         """--version should print CLI version and exit."""
         exit_code = None
