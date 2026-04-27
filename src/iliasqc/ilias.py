@@ -273,7 +273,7 @@ def create_ilias_archive(
     )
     services_export_xml += 'Entity="qpl" SchemaVersion="4.1.0" '
     services_export_xml += 'xmlns:exp="http://www.ilias.de/Services/Export/exp/4_1" '
-    services_export_xml += 'xmlns="http://www.ilias.de/Modules/TestQuestionPool/htlm/4_1">'
+    services_export_xml += 'xmlns="http://www.ilias.de/Services/Export/exp/4_1">'
     services_export_xml += f'<exp:ExportItem Id="{qpl_id}"></exp:ExportItem>'
     services_export_xml += "</exp:Export>\n"
     (services_export_dir / "export.xml").write_text(services_export_xml, encoding="utf-8")
