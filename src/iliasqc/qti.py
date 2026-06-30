@@ -23,12 +23,11 @@ ITEM_OPEN = '  <item ident="{question_id}" title="{title_escaped}" maxattempts="
 ITEM_CLOSE = "  </item>\n"
 
 ITEM_METADATA = """    <qticomment/>
-    <duration>P0Y0M0DT0H1M0S</duration>
     <itemmetadata>
       <qtimetadata>
         <qtimetadatafield>
           <fieldlabel>ILIAS_VERSION</fieldlabel>
-          <fieldentry>9.18.0</fieldentry>
+          <fieldentry>9.19.0</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
           <fieldlabel>QUESTIONTYPE</fieldlabel>
@@ -36,19 +35,35 @@ ITEM_METADATA = """    <qticomment/>
         </qtimetadatafield>
         <qtimetadatafield>
           <fieldlabel>AUTHOR</fieldlabel>
-          <fieldentry>TIQI - The ILIAS Question Importer</fieldentry>
+          <fieldentry>iliasqc</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
-          <fieldlabel>textgaprating</fieldlabel>
-          <fieldentry>cs</fieldentry>
+          <fieldlabel>additional_cont_edit_mode</fieldlabel>
+          <fieldentry>default</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
-          <fieldlabel>fixedTextLength</fieldlabel>
-          <fieldentry/>
+          <fieldlabel>externalId</fieldlabel>
+          <fieldentry>{question_id}</fieldentry>
         </qtimetadatafield>
         <qtimetadatafield>
-          <fieldlabel>identicalScoring</fieldlabel>
-          <fieldentry>1</fieldentry>
+          <fieldlabel>ilias_lifecycle</fieldlabel>
+          <fieldentry>draft</fieldentry>
+        </qtimetadatafield>
+        <qtimetadatafield>
+          <fieldlabel>lifecycle</fieldlabel>
+          <fieldentry>draft</fieldentry>
+        </qtimetadatafield>
+        <qtimetadatafield>
+          <fieldlabel>thumb_size</fieldlabel>
+          <fieldentry>20</fieldentry>
+        </qtimetadatafield>
+        <qtimetadatafield>
+          <fieldlabel>feedback_setting</fieldlabel>
+          <fieldentry>2</fieldentry>
+        </qtimetadatafield>
+        <qtimetadatafield>
+          <fieldlabel>singleline</fieldlabel>
+          <fieldentry>0</fieldentry>
         </qtimetadatafield>
       </qtimetadata>
     </itemmetadata>

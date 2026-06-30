@@ -28,6 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Quiz combination generation feature (generate pools per point value, find combinations)
+- `iliasqc combine` CLI command with `--generate-quiz` option
+- `generate_quiz_from_combination()` function to create quiz from pool combination
+- Quiz archive generation (`create_quiz_archive`, `create_integrated_quiz_archive`)
+- `txt_to_quiz_zip()` function for CLI `quiz` command
+- Pool overview and target point combination CSV functions
+- `convert_to_qti()` function for programmatic QTI conversion
+
 ## [0.1.0] - 2026-04-14
 
 ### Added

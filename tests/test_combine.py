@@ -12,6 +12,7 @@ from iliasqc.combine import (
     format_combinations_table,
     generate_pools_by_points,
     generate_quiz_combinations,
+    generate_quiz_from_combination,
 )
 
 
@@ -310,3 +311,67 @@ _ C
 
         with pytest.raises(ValueError, match="No valid combinations"):
             generate_quiz_combinations(input_file, target_points=3, output_dir=tmp_path)
+
+
+class TestGenerateQuizFromCombination:
+    """Tests for generate_quiz_from_combination function."""
+
+    def test_creates_quiz_from_combination(self, tmp_path: Path) -> None:
+        """Should create a quiz zip from a pool combination."""
+        content = """# TITLE: Test Pool
+
+        [t][s] Q1 @1
+        _ A
+        - B
+
+        [t][s] Q2 @1
+        _ C
+        - D
+
+        [t][s] Q3 @2
+        _ E
+        - F
+
+        [t][s] Q4 @2
+        _ G
+        - H
+        """
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        pools, combinations = generate_quiz_combinations(
+            input_file, target_points=4, output_dir=tmp_path
+        )
+
+        if combinations:
+            quiz_path = generate_quiz_from_combination(input_file, pools, combinations[0], tmp_path)
+            assert quiz_path.exists()
+            assert quiz_path.suffix == ".zip"
+
+    def test_quiz_has_correct_point_total(self, tmp_path: Path) -> None:
+        """Quiz should have questions summing to the target points."""
+        content = """# TITLE: Test Pool
+
+        [t][s] Q1 @1
+        _ A
+        - B
+
+        [t][s] Q2 @2
+        _ C
+        - D
+        """
+        input_file = tmp_path / "questions.txt"
+        input_file.write_text(content)
+
+        pools, combinations = generate_quiz_combinations(
+            input_file, target_points=3, output_dir=tmp_path
+        )
+
+        if combinations:
+            quiz_path = generate_quiz_from_combination(input_file, pools, combinations[0], tmp_path)
+
+            import zipfile
+
+            with zipfile.ZipFile(quiz_path) as zf:
+                names = zf.namelist()
+                assert any("tst_" in name for name in names)

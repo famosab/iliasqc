@@ -96,9 +96,14 @@ class TestTiqiParity:
             folder_timestamp="1234567890",
         )
 
+        folder_timestamp = "1234567890"
         with zipfile.ZipFile(result) as zf:
             qpl_file = [
-                n for n in zf.namelist() if "qpl_" in n and "qti_" not in n and n.endswith(".xml")
+                n
+                for n in zf.namelist()
+                if n.count("/") == 1  # root folder file
+                and n.endswith(".xml")
+                and n.rsplit("/", 1)[-1].startswith(f"{folder_timestamp}__1600__qpl_")
             ][0]
             qpl_content = zf.read(qpl_file).decode("utf-8")
 

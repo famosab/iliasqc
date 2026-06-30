@@ -18,6 +18,7 @@ This package is based on [Kaffeedrache/Tiqi](https://github.com/Kaffeedrache/Tiq
 - **CLI tool**: Convert files from the command line
 - **Template generator**: Create question file templates with examples
 - **Quiz combinations**: Generate multiple pools and find optimal combinations to reach target point totals
+- **Quiz archives**: Create test/assessment archives (not just question pools)
 
 ## Installation
 
@@ -169,10 +170,23 @@ Generate template without examples:
 iliasqc template -o basic_template.txt --no-examples
 ```
 
+#### Quiz (Test) Archive
+
+Create an ILIAS quiz/test archive (questions embedded directly, not pool references):
+
+```bash
+iliasqc quiz questions.txt -o my_quiz.zip
+```
+
+Options:
+- `-t, --title`: Override quiz title
+- `-d, --description`: Override quiz description
+- `-p, --points`: Filter questions by point value
+
 ### Python API
 
 ```python
-from iliasqc import txt_to_zip, txt_to_qti, generate_template
+from iliasqc import txt_to_zip, txt_to_qti, txt_to_quiz_zip, generate_template
 
 # Convert to ILIAS zip archive
 output_path = txt_to_zip("questions.txt")
@@ -181,6 +195,10 @@ print(f"Created: {output_path}")
 # Convert to QTI XML only
 xml_path = txt_to_qti("questions.txt", "output.xml")
 print(f"Created: {xml_path}")
+
+# Create a quiz (test) archive with embedded questions
+quiz_path = txt_to_quiz_zip("questions.txt", "my_quiz.zip")
+print(f"Created: {quiz_path}")
 
 # Generate a template
 template_path = generate_template("my_template.txt")
@@ -215,6 +233,48 @@ print(table)
 
 # Export to CSV
 csv_path = export_combinations_csv(".", combinations, target_points=20)
+```
+
+#### Quiz Archive API
+
+```python
+from iliasqc import (
+    create_quiz_archive,
+    create_integrated_quiz_archive,
+    update_pool_overview_csv,
+    export_target_point_combinations_csv,
+)
+
+# Create quiz from pool references (questions not embedded)
+quiz_path = create_quiz_archive(
+    pool_zip_paths=["pool1.zip", "pool2.zip"],
+    output_dir=".",
+    title="My Quiz",
+    description="A quiz combining multiple pools",
+)
+
+# Create integrated quiz with embedded questions
+qti_content = convert_to_qti(questions)
+integrated_path = create_integrated_quiz_archive(
+    qti_content,
+    output_dir=".",
+    title="Integrated Quiz",
+    description="Quiz with questions embedded",
+)
+
+# Working with pool overview CSVs
+overview_path, rows = update_pool_overview_csv(
+    ".",
+    [{"pool_zip_name": "pool.zip", "ilias_pool_name": "My Pool",
+      "question_count": 10, "points_per_question": 2}],
+)
+
+combinations_path, count = export_target_point_combinations_csv(
+    ".",
+    rows,
+    target_points=20,
+    max_combinations=10,
+)
 ```
 
 ## Development
