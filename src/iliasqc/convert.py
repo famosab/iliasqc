@@ -92,13 +92,16 @@ def txt_to_zip(
         folder_timestamp=folder_timestamp,
     )
 
-    if output_path != archive_path:
-        if output_path.exists():
-            output_path.unlink()
-        archive_path.rename(output_path)
-        return output_path.resolve()
+    # If the user specified a custom output name and it differs from the
+    # archive's auto-generated name, rename (move) the file to match.
+    archive_resolved = archive_path.resolve()
+    if output_path != archive_resolved:
+        output_resolved = output_path.resolve()
+        output_resolved.parent.mkdir(parents=True, exist_ok=True)
+        archive_path.rename(output_resolved)
+        return output_resolved
 
-    return archive_path.resolve()
+    return archive_resolved
 
 
 def txt_to_qti(

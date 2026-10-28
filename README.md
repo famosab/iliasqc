@@ -16,7 +16,6 @@ This package is based on [Kaffeedrache/Tiqi](https://github.com/Kaffeedrache/Tiq
 - **QTI 1.2 compliant**: Generates ILIAS-compatible XML format
 - **Python API**: Use programmatically in your Python code
 - **CLI tool**: Convert files from the command line
-- **Template generator**: Create question file templates with examples
 - **Quiz combinations**: Generate multiple pools and find optimal combinations to reach target point totals
 
 ## Installation
@@ -151,40 +150,14 @@ Generated 3 pools:
   - My Pool_5pt_pool.zip: 8 questions
 ```
 
-Export as QTI XML (without creating zip archive):
-
-```bash
-iliasqc qti questions.txt -o output.xml
-```
-
-Generate a question template file:
-
-```bash
-iliasqc template -o my_template.txt
-```
-
-Generate template without examples:
-
-```bash
-iliasqc template -o basic_template.txt --no-examples
-```
-
 ### Python API
 
 ```python
-from iliasqc import txt_to_zip, txt_to_qti, generate_template
+from iliasqc import txt_to_zip
 
 # Convert to ILIAS zip archive
 output_path = txt_to_zip("questions.txt")
 print(f"Created: {output_path}")
-
-# Convert to QTI XML only
-xml_path = txt_to_qti("questions.txt", "output.xml")
-print(f"Created: {xml_path}")
-
-# Generate a template
-template_path = generate_template("my_template.txt")
-print(f"Created template: {template_path}")
 ```
 
 #### Quiz Combination API
@@ -250,6 +223,19 @@ Fix linting issues automatically:
 ruff check --fix src/ tests/
 ruff format src/ tests/
 ```
+
+### Manual Testing
+
+Create a local Python 3.12+ environment, install the package, and generate sample zip files for manual ILIAS import testing:
+
+```bash
+conda create -n iliasqc python=3.12 -y
+conda activate iliasqc
+pip install -e .
+python manual_test.py
+```
+
+This generates all sample question pools as `.zip` files in `manual_test_output/`, ready to upload to ILIAS. It covers all commands: `convert`, `--title/--description` overrides, `--points` filtering, and `combine` with different target point totals.
 
 ### Continuous Integration
 

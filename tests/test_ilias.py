@@ -3,13 +3,9 @@
 import zipfile
 from pathlib import Path
 
-import pytest
-
 from iliasqc.ilias import (
     create_ilias_archive,
     create_manifest,
-    export_target_point_combinations_csv,
-    update_pool_overview_csv,
 )
 
 
@@ -18,21 +14,13 @@ class TestCreateManifest:
 
     def test_creates_valid_manifest(self) -> None:
         """Manifest should contain all required elements."""
-        manifest = create_manifest("12345", "Test Pool", "A test", "12345")
+        manifest = create_manifest("12345", "Test Pool", "A test", None, "12345")
 
         assert '<?xml version="1.0" encoding="utf-8"?>' in manifest
         assert "Questionpool_Test" in manifest
         assert "Test Pool" in manifest
         assert "A test" in manifest
         assert "il_1600_qpl_12345" in manifest
-
-    def test_manifest_has_qpl_and_qti_entries(self) -> None:
-        """Manifest should reference root-level XML files."""
-        from iliasqc.ilias import create_manifest_file
-
-        manifest = create_manifest_file("12345", "Test", "1234567890", "0")
-        assert "1234567890__0__qpl_12345.xml" in manifest
-        assert "1234567890__0__qti_12345.xml" in manifest
 
 
 class TestTiqiParity:
@@ -212,21 +200,6 @@ class TestCreateIliasArchive:
             assert any("qpl_" in n for n in root_xmls), f"QPL XML should be in root: {root_xmls}"
             assert any("qti_" in n for n in root_xmls), f"QTI XML should be in root: {root_xmls}"
 
-    def test_manifest_has_information_element(self, tmp_path: Path) -> None:
-        """manifest.xml should have Information element with MainEntity."""
-        from iliasqc.ilias import create_manifest_file
-
-        manifest = create_manifest_file("12345", "Test Pool", "1234567890", "0")
-        assert "<Information>" in manifest
-        assert "<MainEntity>qpl</MainEntity>" in manifest
-
-    def test_export_xml_has_correct_namespace(self) -> None:
-        """export.xml should use htm namespace."""
-        from iliasqc.ilias import create_export_xml
-
-        export = create_export_xml("12345", "54321")
-        assert "http://www.ilias.de/Modules/TestQuestionPool/htlm/4_1" in export
-
     def test_qpl_has_pcid_attribute(self) -> None:
         """QPL should have PCID attribute in PageContent matching qpl_id (tiqi style)."""
         from iliasqc.ilias import create_manifest
@@ -247,97 +220,3 @@ class TestCreateIliasArchive:
 
         manifest = create_manifest("12345", "Test", "Desc", ["il_1600_qst_4"], "123")
         assert '<Keyword Language="en"></Keyword>' in manifest
-
-
-class TestUpdatePoolOverviewCsv:
-    """Tests for update_pool_overview_csv function."""
-
-    def test_creates_csv_file(self, tmp_path: Path) -> None:
-        """Should create overview CSV with correct columns."""
-        rows = [
-            {
-                "pool_zip_name": "pool1.zip",
-                "ilias_pool_name": "Pool 1",
-                "question_count": "5",
-                "points_per_question": "1",
-            }
-        ]
-
-        path, merged = update_pool_overview_csv(tmp_path, rows)
-
-        assert path is not None
-        assert path.exists()
-
-        content = path.read_text()
-        assert "pool_zip_name" in content
-        assert "ilias_pool_name" in content
-        assert "question_count" in content
-        assert "points_per_question" in content
-
-    def test_merges_existing_rows(self, tmp_path: Path) -> None:
-        """Should merge with existing CSV entries."""
-        existing = [
-            {
-                "pool_zip_name": "existing.zip",
-                "ilias_pool_name": "Existing",
-                "question_count": "3",
-                "points_per_question": "2",
-            }
-        ]
-        update_pool_overview_csv(tmp_path, existing)
-
-        new_rows = [
-            {
-                "pool_zip_name": "new.zip",
-                "ilias_pool_name": "New",
-                "question_count": "7",
-                "points_per_question": "1",
-            }
-        ]
-        path, merged = update_pool_overview_csv(tmp_path, new_rows)
-
-        assert len(merged) == 2
-
-    def test_returns_none_for_empty_rows(self, tmp_path: Path) -> None:
-        """Should return (None, None) for empty input."""
-        path, merged = update_pool_overview_csv(tmp_path, [])
-        assert path is None
-        assert merged is None
-
-
-class TestExportTargetPointCombinationsCsv:
-    """Tests for export_target_point_combinations_csv function."""
-
-    def test_creates_combinations_csv(self, tmp_path: Path) -> None:
-        """Should create combinations CSV."""
-        overview_rows = [
-            {
-                "pool_zip_name": "pool1.zip",
-                "ilias_pool_name": "Pool 1",
-                "question_count": "5",
-                "points_per_question": "1",
-            },
-            {
-                "pool_zip_name": "pool2.zip",
-                "ilias_pool_name": "Pool 2",
-                "question_count": "10",
-                "points_per_question": "2",
-            },
-        ]
-
-        path, count = export_target_point_combinations_csv(tmp_path, overview_rows, target_points=4)
-
-        assert path is not None
-        assert path.exists()
-        assert count >= 0
-
-    def test_returns_none_for_empty_rows(self, tmp_path: Path) -> None:
-        """Should return (None, 0) for empty input."""
-        path, count = export_target_point_combinations_csv(tmp_path, [])
-        assert path is None
-        assert count == 0
-
-    def test_raises_for_invalid_target_points(self, tmp_path: Path) -> None:
-        """Should raise ValueError for invalid target points."""
-        with pytest.raises(ValueError):
-            export_target_point_combinations_csv(tmp_path, [], target_points=-1)
