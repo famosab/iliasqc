@@ -1,0 +1,23 @@
+# TITLE: Multiple Choice Questions
+# DESCRIPTION: Questions with multiple correct answers [m] type
+
+[t][m] Which of these are fruits? @2
+_ Apple
+_ Banana
+- Carrot
+- Broccoli
+_ Cherry
+
+[t][m] Select all prime numbers: @1
+_ 2
+_ 7
+- 4
+- 9
+_ 13
+
+[t][m] Which languages are statically typed? @2
+_ Java
+- Python
+_ TypeScript
+- JavaScript
+_ Go

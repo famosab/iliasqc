@@ -58,15 +58,8 @@ def create_manifest(
     if timestamp is None:
         timestamp = qpl_id
 
-    normalized_ids = []
-    for qid in question_ids:
-        if "_qst_" in qid:
-            normalized_ids.append(qid.split("_qst_")[-1])
-        else:
-            normalized_ids.append(qid)
-
-    # tiqi uses qpl_id for PCID and TriggerQuestion entries
-    qref_entries = "".join(f'<Question QRef="il_1600_qst_{qid}"/>' for qid in normalized_ids)
+    # Use the exact question IDs from the parser (they must match QTI item idents)
+    qref_entries = "".join(f'<Question QRef="{qid}"/>' for qid in question_ids)
     pcid = qpl_id  # Use pool ID, not question ID
     trigger_entries = f'<TriggerQuestion Id="{qpl_id}"></TriggerQuestion>'
 
@@ -164,7 +157,7 @@ def create_ilias_archive(
     (temp_dir / "objects").mkdir(exist_ok=True)
 
     qpl_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qpl_{qpl_id}.xml"
-    qpl_manifest = create_manifest(qpl_id, title, description, None, folder_timestamp)
+    qpl_manifest = create_manifest(qpl_id, title, description, question_ids, folder_timestamp)
     qpl_xml_filename.write_text(qpl_manifest, encoding="utf-8")
 
     qti_xml_filename = temp_dir / f"{folder_timestamp}__{nic}__qti_{qpl_id}.xml"

@@ -1,0 +1,15 @@
+# TITLE: Gap Fill Questions
+# DESCRIPTION: Cloze / gap-fill questions [g] type
+
+[t][g] Germany's Capital @1
+The capital is [gap]Berlin[/gap].
+Correct: Berlin
+- Paris
+- London
+
+[t][g] Water Formula @2
+H[gap]2[/gap]O.
+Correct: 2
+- O
+- 3
+- H

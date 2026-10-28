@@ -224,6 +224,19 @@ ruff check --fix src/ tests/
 ruff format src/ tests/
 ```
 
+### Manual Testing
+
+Create a local Python 3.12+ environment, install the package, and generate sample zip files for manual ILIAS import testing:
+
+```bash
+conda create -n iliasqc python=3.12 -y
+conda activate iliasqc
+pip install -e .
+python manual_test.py
+```
+
+This generates all sample question pools as `.zip` files in `manual_test_output/`, ready to upload to ILIAS. It covers all commands: `convert`, `--title/--description` overrides, `--points` filtering, and `combine` with different target point totals.
+
 ### Continuous Integration
 
 The project uses GitHub Actions for automated testing. The CI pipeline runs on every push and pull request, testing against Python 3.12, 3.13, and 3.14.

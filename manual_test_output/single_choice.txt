@@ -1,0 +1,20 @@
+# TITLE: Single Choice Questions
+# DESCRIPTION: Basic single-choice questions [s] type
+
+[t][s] What is the capital of France? @1
+_ Paris
+- London
+- Berlin
+- Madrid
+
+[t][s] Which planet is known as the Red Planet? @2
+_ Mars
+- Venus
+- Jupiter
+- Saturn
+
+[t][s] What is 2 + 2? @1
+_ 4
+- 5
+- 3
+- 6

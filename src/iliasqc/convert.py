@@ -92,12 +92,8 @@ def txt_to_zip(
         folder_timestamp=folder_timestamp,
     )
 
-    if output_path != archive_path:
-        if output_path.exists():
-            output_path.unlink()
-        archive_path.rename(output_path)
-        return output_path.resolve()
-
+    # archive_path is already correctly named ({timestamp}__1600__qpl_{id}.zip)
+    # which matches the internal directory — no rename needed.
     return archive_path.resolve()
 
 
