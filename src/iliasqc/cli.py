@@ -13,8 +13,7 @@ from iliasqc.combine import (
     generate_quiz_combinations,
     generate_quiz_from_combination,
 )
-from iliasqc.convert import txt_to_qti, txt_to_quiz_zip, txt_to_zip
-from iliasqc.template import generate_template
+from iliasqc.convert import txt_to_zip
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -88,57 +87,6 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         default=None,
         help="Generate quiz from combination number N (prompts if not specified).",
-    )
-
-    qti_parser = subparsers.add_parser("qti", help="Convert a question file to QTI XML format")
-    qti_parser.add_argument("input", help="Path to the input .txt file.")
-    qti_parser.add_argument(
-        "-o",
-        "--output",
-        default=None,
-        help="Path for the output .xml file (default: same directory as input).",
-    )
-    qti_parser.add_argument(
-        "-p",
-        "--points",
-        type=float,
-        default=None,
-        help="Only include questions with this point value.",
-    )
-
-    template_parser = subparsers.add_parser("template", help="Generate a question file template")
-    template_parser.add_argument(
-        "-o",
-        "--output",
-        default="questions_template.txt",
-        help="Path for the template file (default: questions_template.txt).",
-    )
-    template_parser.add_argument(
-        "--no-examples", action="store_true", help="Generate a template without example questions."
-    )
-
-    quiz_parser = subparsers.add_parser(
-        "quiz", help="Convert a question file to ILIAS quiz (test) archive"
-    )
-    quiz_parser.add_argument("input", help="Path to the input .txt file.")
-    quiz_parser.add_argument(
-        "-o",
-        "--output",
-        default=None,
-        help="Path for the output .zip file (default: same directory as input).",
-    )
-    quiz_parser.add_argument(
-        "-t", "--title", dest="title", default=None, help="Override the quiz title."
-    )
-    quiz_parser.add_argument(
-        "-d", "--description", default=None, help="Override the quiz description."
-    )
-    quiz_parser.add_argument(
-        "-p",
-        "--points",
-        type=float,
-        default=None,
-        help="Only include questions with this point value.",
     )
 
     args = parser.parse_args(argv)
@@ -247,48 +195,6 @@ def main(argv: list[str] | None = None) -> int:
                 print("  Or enter 0 to choose interactively:")
                 print("  iliasqc combine <file> -t <points> --generate-quiz 0")
 
-            return 0
-        except FileNotFoundError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-        except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-
-    elif args.command == "qti":
-        try:
-            output = txt_to_qti(args.input, args.output, filter_points=args.points)
-            print(f"Created: {output}")
-            return 0
-        except FileNotFoundError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-        except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-
-    elif args.command == "template":
-        try:
-            output = generate_template(
-                args.output,
-                include_examples=not args.no_examples,
-            )
-            print(f"Created template: {output}")
-            return 0
-        except FileExistsError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            return 1
-
-    elif args.command == "quiz":
-        try:
-            output = txt_to_quiz_zip(
-                args.input,
-                args.output,
-                title=args.title,
-                description=args.description,
-                filter_points=args.points,
-            )
-            print(f"Created: {output}")
             return 0
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)

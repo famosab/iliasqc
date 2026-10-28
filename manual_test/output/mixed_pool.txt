@@ -1,0 +1,35 @@
+# TITLE: Mixed Question Pool
+# DESCRIPTION: All types, mixed points — for combination testing
+
+[t][s] What does HTML stand for? @1
+_ HyperText Markup Language
+- High Tech Modern Language
+- Hyper Transfer Markup Language
+- Home Tool Markup Language
+
+[t][m] Which are programming languages? @2
+_ Python
+_ Rust
+- Markdown
+- Excel
+_ Kotlin
+
+[t][g] HTTP Status Code @1
+The status code for "Not Found" is [gap]404[/gap].
+Correct: 404
+- 500
+- 200
+- 301
+
+[t][s] First iPhone release year? @2
+_ 2007
+- 2005
+- 2009
+- 2010
+
+[t][m] Select all web browsers: @1
+_ Firefox
+_ Chrome
+- Windows
+_ Safari
+- macOS
