@@ -92,9 +92,16 @@ def txt_to_zip(
         folder_timestamp=folder_timestamp,
     )
 
-    # archive_path is already correctly named ({timestamp}__1600__qpl_{id}.zip)
-    # which matches the internal directory — no rename needed.
-    return archive_path.resolve()
+    # If the user specified a custom output name and it differs from the
+    # archive's auto-generated name, rename (move) the file to match.
+    archive_resolved = archive_path.resolve()
+    if output_path != archive_resolved:
+        output_resolved = output_path.resolve()
+        output_resolved.parent.mkdir(parents=True, exist_ok=True)
+        archive_path.rename(output_resolved)
+        return output_resolved
+
+    return archive_resolved
 
 
 def txt_to_qti(
