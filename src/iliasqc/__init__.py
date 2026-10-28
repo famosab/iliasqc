@@ -10,6 +10,7 @@ from iliasqc.combine import (
     format_combinations_table,
     generate_pools_by_points,
     generate_quiz_combinations,
+    generate_quiz_from_combination,
 )
 from iliasqc.convert import txt_to_zip
 from iliasqc.ilias import create_ilias_archive, create_manifest

@@ -11,6 +11,7 @@ from iliasqc.combine import (
     export_combinations_csv,
     format_combinations_table,
     generate_quiz_combinations,
+    generate_quiz_from_combination,
 )
 from iliasqc.convert import txt_to_zip
 
@@ -79,6 +80,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     combine_parser.add_argument(
         "--csv-only", action="store_true", help="Only output CSV, skip the table display."
+    )
+    combine_parser.add_argument(
+        "--generate-quiz",
+        dest="generate_quiz",
+        type=int,
+        default=None,
+        help="Generate quiz from combination number N (prompts if not specified).",
     )
 
     args = parser.parse_args(argv)
@@ -150,6 +158,42 @@ def main(argv: list[str] | None = None) -> int:
             print(f"\nGenerated {len(pools)} pools:")
             for pool in pools:
                 print(f"  - {pool.zip_filename}: {pool.question_count} questions")
+
+            if args.generate_quiz is not None:
+                if args.generate_quiz == 0:
+                    print("\nAvailable combinations:")
+                    for idx, combo in enumerate(combinations[: args.combinations], 1):
+                        print(f"  {idx}) {combo.get_summary()} ({combo.total_questions} questions)")
+                    print("\nEnter combination number to generate quiz (or 0 to cancel): ", end="")
+                    choice = input().strip()
+                    if not choice:
+                        print("Cancelled.")
+                        return 0
+                    try:
+                        combo_idx = int(choice)
+                    except ValueError:
+                        print("Invalid choice.", file=sys.stderr)
+                        return 1
+                else:
+                    combo_idx = args.generate_quiz
+
+                if 1 <= combo_idx <= len(combinations):
+                    combination = combinations[combo_idx - 1]
+                    quiz_path = generate_quiz_from_combination(
+                        args.input, pools, combination, output_dir
+                    )
+                    print(f"\nGenerated quiz: {quiz_path}")
+                else:
+                    print(
+                        f"\nError: Combination number must be between 1 and {len(combinations)}",
+                        file=sys.stderr,
+                    )
+                    return 1
+            elif args.generate_quiz is None and not args.csv_only:
+                print("\nTo generate a quiz from a combination:")
+                print("  iliasqc combine <file> -t <points> --generate-quiz <number>")
+                print("  Or enter 0 to choose interactively:")
+                print("  iliasqc combine <file> -t <points> --generate-quiz 0")
 
             return 0
         except FileNotFoundError as e:
