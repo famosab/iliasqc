@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-OUTPUT_DIR = ROOT / "manual_test_output"
+OUTPUT_DIR = ROOT / "output"
 
 # Use the iliasqc conda environment's Python (requires Python >= 3.12)
 PYTHON = "/Users/famke/miniconda3/envs/iliasqc/bin/python"
