@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from iliasqc.ilias import create_ilias_archive
-from iliasqc.parser import extract_metadata, parse_question_file
+from iliasqc.parser import extract_metadata, parse_question_file, extract_point_values
 from iliasqc.qti import convert_to_qti
 
 
@@ -152,3 +152,6 @@ def txt_to_qti(
     output_path.write_text(qti_content, encoding="utf-8")
 
     return output_path.resolve()
+
+
+
